@@ -1,0 +1,27 @@
+<resources>
+    <string name="app_name">语音记事本</string>
+    <string name="start_record">开始录音</string>
+    <string name="end_record">结束录音</string>
+    <string name="save_record">保存录音</string>
+    <string name="save">保存</string>
+    <string name="give_up">舍弃</string>
+    <string name="new_record">新录音</string>
+
+    <string name="home_page">首页</string>
+
+
+    <string name="image_translucent_bar">Image Translucent Bar Training</string>
+    <string name="color_translucent_bar">Color Translucent Bar Training</string>
+    <string name="tool_bar">ToolBar Training</string>
+    <string name="menu_search">查找</string>
+    <string name="menu_notifications">通知</string>
+    <string name="menu_settings">设置</string>
+    <string name="menu_about_us">关于</string>
+    <string name="zhi_hu">知乎</string>
+    <string name="item_01">Item 1</string>
+    <string name="item_02">Item 2</string>
+    <string name="simple_navigation_drawer">SimpleNavigationDrawer</string>
+    <string name="simple_drawer">SimpleDrawer</string>
+    <string name="open">Open</string>
+    <string name="close">Close</string>
+</resources>
