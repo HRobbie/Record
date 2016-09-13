@@ -8,7 +8,6 @@ import android.content.Intent;
 import android.graphics.drawable.AnimationDrawable;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
-import android.os.Bundle;
 import android.os.Environment;
 import android.os.SystemClock;
 import android.support.design.widget.AppBarLayout;
@@ -17,6 +16,7 @@ import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -67,12 +67,11 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
-import java.util.jar.Manifest;
 
-public class  MainActivity extends AppCompatActivity implements View.OnClickListener, AdapterView.OnItemClickListener , SwipeView.OnSwipeStatusChangeListener {
+public class FolderActivity extends AppCompatActivity implements View.OnClickListener, AdapterView.OnItemClickListener , SwipeView.OnSwipeStatusChangeListener {
 
     private RecyclerView lv_record;
-//    private Button start_record;
+    //    private Button start_record;
 //    private Button end_record;
     private File mRecAudioFile;        // 录制的音频文件
     private File mRecAudioPath;        // 录制的音频文件路徑
@@ -86,10 +85,10 @@ public class  MainActivity extends AppCompatActivity implements View.OnClickList
 
     private DBManager dbManager;
     private Calendar mCalendar;
-//    private DialogManager mDialogManager;//录音的过程动画
+    //    private DialogManager mDialogManager;//录音的过程动画
     private View mAnimView;//播放声音的动画
 
-//    private LinearLayout ll_voice;
+    //    private LinearLayout ll_voice;
     private Toolbar mToolbar;
 
     private boolean cbVisibility;//checkbox是否可见
@@ -100,7 +99,7 @@ public class  MainActivity extends AppCompatActivity implements View.OnClickList
     private Button btn_delete;
 
 
-//    private TextView tv_record_finish;
+    //    private TextView tv_record_finish;
     private FloatingActionButton fab_play;
     private boolean inRecording;//是不是在录音中
 
@@ -125,7 +124,7 @@ public class  MainActivity extends AppCompatActivity implements View.OnClickList
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_collapsing_demo);
+        setContentView(R.layout.activity_folder);
 
         initView();
 
@@ -219,7 +218,7 @@ public class  MainActivity extends AppCompatActivity implements View.OnClickList
         mCollapsingToolbarLayout.setTitle("语音记事本");
 
         toolbar = (Toolbar)findViewById(R.id.toolbar);
-
+        toolbar.setNavigationIcon(R.drawable.arrow_back);
 //        mCollapsingToolbarLayout.setCollapsedTitleTextColor(R.color.white);
 
         chronometer = (Chronometer)findViewById(R.id.chronometer);
@@ -250,10 +249,8 @@ public class  MainActivity extends AppCompatActivity implements View.OnClickList
 //        mToolbar.setTitle("语音记事本");
 //        mToolbar.setTitleTextColor(getResources().getColor(android.R.color.white));
         setSupportActionBar(mToolbar);
-//        toolbar.setNavigationIcon(R.drawable.arrow_back);
-//        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        setSupportActionBar(toolbar);
         mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -270,9 +267,9 @@ public class  MainActivity extends AppCompatActivity implements View.OnClickList
 //                } else if (menuItemId == R.id.action_notification) {
 //                    Toast.makeText(MainActivity.this, R.string.menu_notifications, Toast.LENGTH_SHORT).show();
 
-               if (menuItemId == R.id.action_settings) {
+                if (menuItemId == R.id.action_settings) {
 //                    Toast.makeText(MainActivity.this, R.string.menu_settings, Toast.LENGTH_SHORT).show();
-                        finish();
+                    finish();
 //                } else if (menuItemId == R.id.action_about) {
 //                    Toast.makeText(MainActivity.this, R.string.menu_about_us, Toast.LENGTH_SHORT).show();
 //
@@ -326,32 +323,32 @@ public class  MainActivity extends AppCompatActivity implements View.OnClickList
             case R.id.btn_delete:
 
                 new AlertDialog.Builder(this)
-                            .setTitle("确定要删除吗？")
-                            .setPositiveButton("确定", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    for(int i=0;i<mMusicList.size();i++){
-                                        RecordBean recordBean = mMusicList.get(i);
-                                        Log.e("TAG", "recordBean.isCheck()"+recordBean.isCheck());
-                                        if(recordBean.isCheck()){
-                                            File file = new File(recordBean.getStorePosition());
-                                            file.delete();
-                                            dbManager.delete(recordBean.getCreateName());
-                                            mRecordList.remove(i);
-                                            mMusicList.remove(i);
+                        .setTitle("确定要删除吗？")
+                        .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                for(int i=0;i<mMusicList.size();i++){
+                                    RecordBean recordBean = mMusicList.get(i);
+                                    Log.e("TAG", "recordBean.isCheck()"+recordBean.isCheck());
+                                    if(recordBean.isCheck()){
+                                        File file = new File(recordBean.getStorePosition());
+                                        file.delete();
+                                        dbManager.delete(recordBean.getCreateName());
+                                        mRecordList.remove(i);
+                                        mMusicList.remove(i);
 
-                                            i--;
-                                        }
+                                        i--;
                                     }
-                                    cbVisibility=false;
-                                    ll_batch.setVisibility(View.GONE);
+                                }
+                                cbVisibility=false;
+                                ll_batch.setVisibility(View.GONE);
 //                                    toolbar.setVisibility(View.VISIBLE);
 //                                    adapter.notifyDataSetChanged();
-                                    adapter.setCbVisibility(cbVisibility);
-                                }
-                            })
-                            .setNegativeButton("取消", null)
-                            .show();
+                                adapter.setCbVisibility(cbVisibility);
+                            }
+                        })
+                        .setNegativeButton("取消", null)
+                        .show();
 
                 break;
             case R.id.fab_play:
@@ -531,7 +528,7 @@ public class  MainActivity extends AppCompatActivity implements View.OnClickList
                                 noCloseDialog(dialog,true);
                             }
                         } else {
-                            CommentUtils.showToast(MainActivity.this,"名字不能为空！");
+                            CommentUtils.showToast(FolderActivity.this,"名字不能为空！");
                             noCloseDialog(dialog,false);
                         }
                     }
@@ -787,12 +784,12 @@ public class  MainActivity extends AppCompatActivity implements View.OnClickList
 //                .setPositiveButton("确定", new DialogInterface.OnClickListener() {
 //                    @Override
 //                    public void onClick(DialogInterface dialog, int which) {
-                        playfile.delete();
-                        dbManager.delete(createName);
+        playfile.delete();
+        dbManager.delete(createName);
 
-                        mMusicList.remove(position);
+        mMusicList.remove(position);
 
-                        adapter.notifyDataSetChanged();
+        adapter.notifyDataSetChanged();
 //                    }
 //                })
 //                .setNegativeButton("取消", null)
@@ -829,7 +826,7 @@ public class  MainActivity extends AppCompatActivity implements View.OnClickList
             ViewHolder holder=null;
             if(convertView==null){
                 holder=new ViewHolder();
-                convertView=View.inflate(MainActivity.this,R.layout.item,null);
+                convertView=View.inflate(FolderActivity.this,R.layout.item,null);
                 holder.tv_create_time= (TextView) convertView.findViewById(R.id.tv_create_time);
                 holder.tv_record_name= (TextView) convertView.findViewById(R.id.tv_record_name);
                 holder.tv_clock_time= (TextView) convertView.findViewById(R.id.tv_clock_time);
@@ -894,7 +891,7 @@ public class  MainActivity extends AppCompatActivity implements View.OnClickList
 //            alphaAnimation1.setRepeatCount(5);
 //            alphaAnimation1.setRepeatMode(Animation.REVERSE);
             Animation alphaAnimation1 = AnimationUtils.loadAnimation(
-                    MainActivity.this, R.anim.myanim);
+                    FolderActivity.this, R.anim.myanim);
             alphaAnimation1.setAnimationListener(new Animation.AnimationListener() {
                 @Override
                 public void onAnimationStart(Animation animation) {
@@ -947,7 +944,7 @@ public class  MainActivity extends AppCompatActivity implements View.OnClickList
 
 
 
-            holder.swipeView.setOnSwipeStatusChangeListener(MainActivity.this);
+            holder.swipeView.setOnSwipeStatusChangeListener(FolderActivity.this);
 
             holder.swipeView.fastClose();
 
@@ -977,7 +974,7 @@ public class  MainActivity extends AppCompatActivity implements View.OnClickList
                         if (unClosedSwipeView.size() > 0) {
                             closeAllOpenedSwipeView();
                         } else {
-                            Intent intent = new Intent(MainActivity.this, ClockActivity.class);
+                            Intent intent = new Intent(FolderActivity.this, ClockActivity.class);
                             intent.putExtra("createName",mRecordList.get(lastPosition));
                             startActivity(intent);
                         }
@@ -1009,20 +1006,20 @@ public class  MainActivity extends AppCompatActivity implements View.OnClickList
 
     }
 
-   static class ViewHolder{
+    static class ViewHolder{
         TextView tv_record_name;
         TextView tv_create_time;
         TextView tv_duration;
         TextView id_time;
         ImageView iv_clock;
 
-       TextView tv_clock_time;
+        TextView tv_clock_time;
         FrameLayout id_recorder_length;
-       View mAnimView;//播放声音的动画
-       CheckBox cb_select;
+        View mAnimView;//播放声音的动画
+        CheckBox cb_select;
 
-       SwipeView swipeView;
-       TextView delete;
+        SwipeView swipeView;
+        TextView delete;
         LinearLayout ll_content;
 
 //       SeekBar sb_record;
@@ -1048,8 +1045,8 @@ public class  MainActivity extends AppCompatActivity implements View.OnClickList
      */
     private void stopRemind(){
 
-        Intent intent = new Intent(MainActivity.this, AlarmReceiver.class);
-        PendingIntent pi = PendingIntent.getBroadcast(MainActivity.this, 0,
+        Intent intent = new Intent(FolderActivity.this, AlarmReceiver.class);
+        PendingIntent pi = PendingIntent.getBroadcast(FolderActivity.this, 0,
                 intent, 0);
         AlarmManager am = (AlarmManager)getSystemService(ALARM_SERVICE);
         //取消警报
@@ -1132,29 +1129,29 @@ public class  MainActivity extends AppCompatActivity implements View.OnClickList
     public boolean onContextItemSelected(MenuItem item) {
 //        final int selectedPosition = ((AdapterView.AdapterContextMenuInfo) item.getMenuInfo()).position;
 
-       selectedPosition= adapter.getSelectedPosition();
+        selectedPosition= adapter.getSelectedPosition();
         final RecordBean recordBean = mMusicList.get(selectedPosition);
         switch(item.getItemId()){
             case 2:
                 final EditText editText = new EditText(this);
                 editText.setText(recordBean.getName());
                 new AlertDialog.Builder(this)
-                            .setTitle("修改录音名字")
-                            .setView(editText)
-                            .setPositiveButton("确定", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    String name = editText.getText().toString().trim();
-                                    if(!name.isEmpty()){
-                                        dbManager.update(name,recordBean.getCreateName());
-                                        recordBean.setName(name);
-                                        mMusicList.set(selectedPosition,recordBean);
-                                        adapter.notifyDataSetChanged();
-                                    }
+                        .setTitle("修改录音名字")
+                        .setView(editText)
+                        .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                String name = editText.getText().toString().trim();
+                                if(!name.isEmpty()){
+                                    dbManager.update(name,recordBean.getCreateName());
+                                    recordBean.setName(name);
+                                    mMusicList.set(selectedPosition,recordBean);
+                                    adapter.notifyDataSetChanged();
                                 }
-                            })
-                            .setNegativeButton("取消", null)
-                            .show();
+                            }
+                        })
+                        .setNegativeButton("取消", null)
+                        .show();
 
 
                 break;
@@ -1162,9 +1159,9 @@ public class  MainActivity extends AppCompatActivity implements View.OnClickList
                 Intent intent1 = new Intent(this, PlayActivity.class);
                 intent1.putExtra("position",selectedPosition);
                 intent1.putExtra("path",mMusicList.get(selectedPosition).getStorePosition());
-                 intent1.putExtra("recordName",mMusicList.get(selectedPosition).getName());
+                intent1.putExtra("recordName",mMusicList.get(selectedPosition).getName());
 //
-                 startActivity(intent1);
+                startActivity(intent1);
                 break;
             case 3:
                 dbManager.updateIsAlert(recordBean.getCreateName(),0);
@@ -1353,6 +1350,4 @@ public class  MainActivity extends AppCompatActivity implements View.OnClickList
             mRecAudioFile.delete();
         }
     }
-
-
 }

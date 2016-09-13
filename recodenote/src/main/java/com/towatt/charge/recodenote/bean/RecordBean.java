@@ -23,6 +23,28 @@ public class RecordBean {
     private boolean isShake;
 
     private String storePosition;
+
+    private int whichFolder;
+
+    private String folderName;
+
+
+
+    public RecordBean(int id, String name, long createDate, long duration, String createName, long clockTime, int isAlert, boolean isCheck, boolean isShake, String storePosition, int whichFolder, String folderName) {
+        this.id = id;
+        this.name = name;
+        this.createDate = createDate;
+        this.duration = duration;
+        this.createName = createName;
+        this.clockTime = clockTime;
+        this.isAlert = isAlert;
+        this.isCheck = isCheck;
+        this.isShake = isShake;
+        this.storePosition = storePosition;
+        this.whichFolder = whichFolder;
+        this.folderName = folderName;
+    }
+
     public RecordBean(int id, String name, long createDate, long duration, String createName, String storePosition) {
         this.id = id;
         this.name = name;
@@ -53,6 +75,22 @@ public class RecordBean {
         this.isCheck = isCheck;
         this.isShake = isShake;
         this.storePosition = storePosition;
+    }
+
+    public int getWhichFolder() {
+        return whichFolder;
+    }
+
+    public void setWhichFolder(int whichFolder) {
+        this.whichFolder = whichFolder;
+    }
+
+    public String getFolderName() {
+        return folderName;
+    }
+
+    public void setFolderName(String folderName) {
+        this.folderName = folderName;
     }
 
     public String getStorePosition() {

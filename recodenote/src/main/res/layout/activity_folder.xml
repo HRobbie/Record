@@ -1,9 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    >
 <android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/coordinator_layout"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -60,12 +55,12 @@
 
     </android.support.design.widget.AppBarLayout>
 
-        <android.support.v7.widget.RecyclerView
-            android:id="@+id/lv_record"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@color/gray_total_bg"
-            app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/lv_record"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/gray_total_bg"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
 
 
@@ -81,35 +76,3 @@
 
 
 </android.support.design.widget.CoordinatorLayout>
-    <LinearLayout
-        android:id="@+id/ll_batch"
-        android:layout_alignParentBottom="true"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:visibility="gone"
-
-        >
-        <Button
-            android:id="@+id/btn_cancel"
-            android:layout_weight="1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="取消"
-            android:background="@color/colorAccent"
-            android:textColor="@color/white"
-            android:visibility="visible"
-            />
-        <Button
-            android:id="@+id/btn_delete"
-            android:layout_weight="1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="删除"
-            android:background="@color/colorAccent"
-            android:textColor="@color/white"
-            android:visibility="visible"
-            />
-
-    </LinearLayout>
-</FrameLayout>

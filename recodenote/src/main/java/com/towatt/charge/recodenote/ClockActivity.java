@@ -148,8 +148,9 @@ public class ClockActivity extends AppCompatActivity implements View.OnClickList
         Toolbar toolbar =  (Toolbar) findViewById(R.id.toolbar);
 
         setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+//        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 //        getSupportActionBar().setDisplayShowTitleEnabled(false);
+        toolbar.setNavigationIcon(R.drawable.arrow_back);
         toolbar.setTitle("设置提醒");
         toolbar.setTitleTextColor(Color.WHITE);
 
