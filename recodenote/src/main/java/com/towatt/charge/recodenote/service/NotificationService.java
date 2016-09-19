@@ -16,6 +16,7 @@ import android.util.Log;
 
 import com.towatt.charge.recodenote.MainActivity;
 import com.towatt.charge.recodenote.R;
+import com.towatt.charge.recodenote.bean.FolderBean;
 import com.towatt.charge.recodenote.bean.RecordBean;
 import com.towatt.charge.recodenote.db.DBManager;
 
@@ -32,6 +33,8 @@ import java.util.List;
 public class NotificationService extends Service {
     int NOTIFYID_2 = 124;	//第二个通知的ID
     public static MediaPlayer mMediaPlayer;
+    private List<RecordBean> recordList;
+    private DBManager dbManager;
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -46,7 +49,7 @@ public class NotificationService extends Service {
 
 //创建media player
         mMediaPlayer = new MediaPlayer();
-
+        dbManager = new DBManager(this);
         try {
             mMediaPlayer.setDataSource(this, alert);
             final AudioManager audioManager = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
@@ -88,45 +91,59 @@ public class NotificationService extends Service {
             }
         }.start();
 
-        DBManager dbManager = new DBManager(this);
-        List<RecordBean> recordList = dbManager.queryAllClock1();
-        for(int i=0;i<recordList.size();i++){
-            Log.e("TAG", "Notificationservice nstartCommand");
-            RecordBean recordBean = recordList.get(i);
-            Log.e("TAG", "onrecivie");
-            NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-            // 添加第二个通知
+
+
+        findReordList(startId);
+
+
+        return START_NOT_STICKY;
+    }
+
+    private void findReordList(final int startId) {
+        new Thread(){
+            public void run(){
+                recordList = dbManager.queryAllClock1();
+                for(int i = 0; i< recordList.size(); i++){
+                    Log.e("TAG", "Notificationservice nstartCommand");
+                    RecordBean recordBean = recordList.get(i);
+                    FolderBean folderBean = dbManager.queryFolderByWhich(recordBean.getWhichFolder());
+
+                    Log.e("TAG", "onrecivie");
+                    NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+                    // 添加第二个通知
 //            Notification notify1 = new Notification(R.drawable.advise2,
 //                    "语音记事本提醒", System.currentTimeMillis());
 //            notify1.flags|=Notification.FLAG_AUTO_CANCEL;	//打开应用程序后图标消失
 //            notify1.defaults = Notification.DEFAULT_VIBRATE;	//设置默认声音、默认振动和默认闪光灯
 //            notify1.flags |= Notification.FLAG_INSISTENT;
 //            notify1.flags |= Notification.FLAG_ONGOING_EVENT;
-            Intent intent1=new Intent(this,MainActivity.class);
-            intent1.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    Intent intent1=new Intent(NotificationService.this,MainActivity.class);
+                    intent1.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 //            Bundle bundle = new Bundle();
 //            bundle.putString("name",recordBean.getName());
-            intent1.putExtra("name",recordBean.getName());
+                    intent1.putExtra("createName",recordBean.getCreateName());
+                    intent1.putExtra("whichFolder",recordBean.getWhichFolder());
+                    intent1.putExtra("folderName",folderBean.getFolderName());
 //            intent.putExtras(bundle);
-            PendingIntent pendingIntent=PendingIntent.getActivity(this, startId+i, intent1, PendingIntent.FLAG_CANCEL_CURRENT);
+                    PendingIntent pendingIntent=PendingIntent.getActivity(NotificationService.this, startId+i, intent1, PendingIntent.FLAG_CANCEL_CURRENT);
 //            notify1.setLatestEventInfo(this, "通知",
 //                    recordBean.getName()+"要收听了", pendingIntent);//设置事件信息
 //            notificationManager.notify(startId+i, notify1); // 通过通知管理器发送通知
 
 
-            Notification.Builder builder = new Notification.Builder(this);
-            builder.setSmallIcon(R.drawable.advise2).setContentTitle("通知").setWhen(System.currentTimeMillis())
-                .setDefaults(Notification.DEFAULT_VIBRATE).setContentIntent(pendingIntent).setContentText(recordBean.getName()+"要收听了")
-                    .setTicker("语音记事本提醒").setOngoing(true).setAutoCancel(true);
-            Notification build = builder.build();
-            notificationManager.notify(startId+i, build);
+                    Notification.Builder builder = new Notification.Builder(NotificationService.this);
+                    builder.setSmallIcon(R.drawable.advise2).setContentTitle("通知").setWhen(System.currentTimeMillis())
+                            .setDefaults(Notification.DEFAULT_VIBRATE).setContentIntent(pendingIntent).setContentText(recordBean.getName()+"要收听了")
+                            .setTicker("语音记事本提醒").setOngoing(true).setAutoCancel(true);
+                    Notification build = builder.build();
+
+                    notificationManager.notify(startId+i, build);
 
 
-        }
+                }
+            }
+        }.start();
 
-
-
-        return START_NOT_STICKY;
     }
 
     @Override

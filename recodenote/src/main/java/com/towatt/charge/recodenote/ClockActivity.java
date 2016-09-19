@@ -4,10 +4,7 @@ import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.graphics.Color;
-import android.graphics.PorterDuff;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -54,6 +51,8 @@ public class ClockActivity extends AppCompatActivity implements View.OnClickList
     private RecordBean recordBean;
 
     private TextView tv_reset;
+    private String folderName;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -75,6 +74,7 @@ public class ClockActivity extends AppCompatActivity implements View.OnClickList
         dbManager = new DBManager(this);
         Intent intent = getIntent();
         createName = intent.getStringExtra("createName");
+        folderName = intent.getStringExtra("folderName");
         recordBean = dbManager.queryByCreateName(createName);
         long clockTime = recordBean.getClockTime();
         if(clockTime!=0){
@@ -150,10 +150,9 @@ public class ClockActivity extends AppCompatActivity implements View.OnClickList
         setSupportActionBar(toolbar);
 //        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 //        getSupportActionBar().setDisplayShowTitleEnabled(false);
-        toolbar.setNavigationIcon(R.drawable.arrow_back);
         toolbar.setTitle("设置提醒");
         toolbar.setTitleTextColor(Color.WHITE);
-
+        toolbar.setNavigationIcon(R.drawable.arrow_back);
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -268,6 +267,10 @@ public class ClockActivity extends AppCompatActivity implements View.OnClickList
         tv_clock_time.setTextColor(getResources().getColor(R.color.red));
         tv_clock_date.setTextColor(getResources().getColor(R.color.red));
         Intent intent1 = new Intent(this, MainActivity.class);
+        intent1.putExtra("whichFolder",recordBean.getWhichFolder());
+        Log.e("TAG", "clockActivity folderName="+folderName);
+        intent1.putExtra("folderName", folderName);
+//        intent1.putExtra("createName", recordBean.getCreateName());
         startActivity(intent1);
         finish();
 

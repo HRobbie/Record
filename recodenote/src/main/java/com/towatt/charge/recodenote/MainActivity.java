@@ -1,43 +1,31 @@
 package com.towatt.charge.recodenote;
 
+import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.AlertDialog;
 import android.app.PendingIntent;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.drawable.AnimationDrawable;
+import android.graphics.Color;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.SystemClock;
-import android.support.design.widget.AppBarLayout;
-import android.support.design.widget.CollapsingToolbarLayout;
-import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.ContextMenu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
-import android.widget.AdapterView;
-import android.widget.BaseAdapter;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.Chronometer;
 import android.widget.EditText;
-import android.widget.FrameLayout;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.TextView;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.karumi.dexter.Dexter;
@@ -48,15 +36,21 @@ import com.karumi.dexter.listener.PermissionGrantedResponse;
 import com.karumi.dexter.listener.PermissionRequest;
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener;
 import com.karumi.dexter.listener.single.PermissionListener;
-import com.towatt.charge.recodenote.adapter.RecordAdapter;
+import com.towatt.charge.recodenote.adapter.MenuAdapter;
 import com.towatt.charge.recodenote.bean.RecordBean;
 import com.towatt.charge.recodenote.db.DBManager;
+import com.towatt.charge.recodenote.listener.OnItemClickListener;
 import com.towatt.charge.recodenote.manager.MediaManager;
 import com.towatt.charge.recodenote.receiver.AlarmReceiver;
 import com.towatt.charge.recodenote.service.BootScheduleService;
 import com.towatt.charge.recodenote.service.NotificationService;
 import com.towatt.charge.recodenote.utils.CommentUtils;
-import com.towatt.charge.recodenote.view.SwipeView;
+import com.yanzhenjie.recyclerview.swipe.Closeable;
+import com.yanzhenjie.recyclerview.swipe.OnSwipeMenuItemClickListener;
+import com.yanzhenjie.recyclerview.swipe.SwipeMenu;
+import com.yanzhenjie.recyclerview.swipe.SwipeMenuCreator;
+import com.yanzhenjie.recyclerview.swipe.SwipeMenuItem;
+import com.yanzhenjie.recyclerview.swipe.SwipeMenuRecyclerView;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -67,11 +61,10 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
-import java.util.jar.Manifest;
 
-public class  MainActivity extends AppCompatActivity implements View.OnClickListener, AdapterView.OnItemClickListener , SwipeView.OnSwipeStatusChangeListener {
+public class  MainActivity extends AppCompatActivity implements View.OnClickListener  {
 
-    private RecyclerView lv_record;
+    private SwipeMenuRecyclerView lv_record;
 //    private Button start_record;
 //    private Button end_record;
     private File mRecAudioFile;        // 录制的音频文件
@@ -82,11 +75,9 @@ public class  MainActivity extends AppCompatActivity implements View.OnClickList
     private List<String> mRecordList = new ArrayList<String>();// 录音文件列表
 
     private int fileCount=0;//新录音（数字）的数字
-    private RecordAdapter adapter;
 
     private DBManager dbManager;
     private Calendar mCalendar;
-//    private DialogManager mDialogManager;//录音的过程动画
     private View mAnimView;//播放声音的动画
 
 //    private LinearLayout ll_voice;
@@ -113,20 +104,25 @@ public class  MainActivity extends AppCompatActivity implements View.OnClickList
     private long rangeTime;//上一次暂停经历的时间
 
     private long sumRange=rangeTime;
-    private CollapsingToolbarLayout mCollapsingToolbarLayout;
-    //    private Button btn_pause;
 
-    private AppBarLayout appbar;
 
     private Toolbar toolbar;
-    private CoordinatorLayout coordinator_layout;
 
+    private RelativeLayout rl_record;
     private MultiplePermissionsListener allPermissionsListener;
+    private String whichFolder;
+    private View lastAnimView;
+    private String createName;
+    private String folderName;
+    private MenuAdapter menuAdapter;
+
+    private Activity mContext;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_collapsing_demo);
 
+        mContext=this;
         initView();
 
         initData();
@@ -135,6 +131,24 @@ public class  MainActivity extends AppCompatActivity implements View.OnClickList
     }
 
     private void initData() {
+
+        Intent intent = getIntent();
+        createName = intent.getStringExtra("createName");
+        folderName = intent.getStringExtra("folderName");
+        if (Environment.getExternalStorageState().equals(
+                Environment.MEDIA_MOUNTED))// 手机有SD卡的情况
+        {
+            // 在这里我们创建一个文件，用于保存录制内容
+            mRecAudioPath = new File(Environment.getExternalStorageDirectory()
+                    .getAbsolutePath() + "/data/files/");
+        } else// 手机无SD卡的情况
+        {
+            mRecAudioPath = this.getCacheDir();
+        }
+        toolbar.setTitle(folderName);
+        whichFolder = intent.getStringExtra("whichFolder");
+
+        Log.e("TAG", "MainActivity whichFolder="+whichFolder);
         startRemind();
 
         stopNotificationMusic();
@@ -144,25 +158,18 @@ public class  MainActivity extends AppCompatActivity implements View.OnClickList
         dbManager=new DBManager(this);
 
 
-
+//        musicList();
 
         registerForContextMenu(lv_record);
 
-        Intent intent = new Intent(this, BootScheduleService.class);
-        startService(intent);
 
 
 
 
 
-//        ll_voice.setVisibility(View.GONE);
-
-
-//        chronometer.setBase(SystemClock.elapsedRealtime());//计时器清零
         int hour = (int) ((SystemClock.elapsedRealtime() - chronometer.getBase()) / 1000 / 60);
         chronometer.setFormat("0"+String.valueOf(hour)+":%s");
         chronometer.setBase(SystemClock.elapsedRealtime());//计时器清零
-
 
 
     }
@@ -193,7 +200,7 @@ public class  MainActivity extends AppCompatActivity implements View.OnClickList
     }
 
     private void initView() {
-        lv_record = (RecyclerView)findViewById(R.id.lv_record);
+        lv_record = (SwipeMenuRecyclerView)findViewById(R.id.lv_record);
 //        start_record = (Button)findViewById(R.id.start_record);
 //        end_record = (Button)findViewById(R.id.end_record);
 //
@@ -214,14 +221,18 @@ public class  MainActivity extends AppCompatActivity implements View.OnClickList
 //        tv_record_finish = (TextView)findViewById(R.id.tv_record_finish);
         fab_play = (FloatingActionButton) findViewById(R.id.fab_play);
 
-        appbar = (AppBarLayout)findViewById(R.id.appbar);
-        mCollapsingToolbarLayout = (CollapsingToolbarLayout) findViewById(R.id.collapsing_toolbar_layout);
-        mCollapsingToolbarLayout.setTitle("语音记事本");
 
         toolbar = (Toolbar)findViewById(R.id.toolbar);
-
+        toolbar.setTitle("语音文件");
+        toolbar.setTitleTextColor(Color.WHITE);
+        toolbar.setNavigationIcon(R.drawable.arrow_back);
 //        mCollapsingToolbarLayout.setCollapsedTitleTextColor(R.color.white);
-
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onBackPressed();
+            }
+        });
         chronometer = (Chronometer)findViewById(R.id.chronometer);
         btn_cancel.setOnClickListener(this);
         btn_delete.setOnClickListener(this);
@@ -232,15 +243,20 @@ public class  MainActivity extends AppCompatActivity implements View.OnClickList
 
         lv_record.setLayoutManager(new LinearLayoutManager(this));
 
-
+        rl_record = (RelativeLayout)findViewById(R.id.rl_record);
 
 
         lv_record.setItemAnimator(new DefaultItemAnimator());
-//        mDialogManager = new DialogManager(this);
-        adapter = new RecordAdapter(this,mMusicList,cbVisibility);
 
-        lv_record.setAdapter(adapter);
+        menuAdapter = new MenuAdapter(this, mMusicList);
 
+//        lv_record.setAdapter(adapter);
+        // 为SwipeRecyclerView的Item创建菜单就两句话，不错就是这么简单：
+        // 设置菜单创建器。
+        lv_record.setSwipeMenuCreator(swipeMenuCreator);
+        // 设置菜单Item点击监听。
+        lv_record.setSwipeMenuItemClickListener(menuItemClickListener);
+        lv_record.setAdapter(menuAdapter);
 
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
 //        mToolbar.inflateMenu(R.menu.zhihu_toolbar_menu);
@@ -270,13 +286,14 @@ public class  MainActivity extends AppCompatActivity implements View.OnClickList
 //                } else if (menuItemId == R.id.action_notification) {
 //                    Toast.makeText(MainActivity.this, R.string.menu_notifications, Toast.LENGTH_SHORT).show();
 
-               if (menuItemId == R.id.action_settings) {
+//               if (menuItemId == R.id.action_settings) {
 //                    Toast.makeText(MainActivity.this, R.string.menu_settings, Toast.LENGTH_SHORT).show();
-                        finish();
-//                } else if (menuItemId == R.id.action_about) {
+//                        finish();
+//                }
+//                  else if (menuItemId == R.id.action_about) {
 //                    Toast.makeText(MainActivity.this, R.string.menu_about_us, Toast.LENGTH_SHORT).show();
-//
-                }
+////
+//                }
                 return true;
             }
         });
@@ -285,22 +302,22 @@ public class  MainActivity extends AppCompatActivity implements View.OnClickList
 //        btn_pause.setOnClickListener(this);
 //        mToolbar.setVisibility(View.VISIBLE);
 
-        lv_record.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
-                super.onScrollStateChanged(recyclerView, newState);
-                if(newState== RecyclerView.SCROLL_STATE_DRAGGING){
-                    if (unClosedSwipeView.size() > 0) {
-                        closeAllOpenedSwipeView();
-                    }
-                }
-            }
-
-            @Override
-            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                super.onScrolled(recyclerView, dx, dy);
-            }
-        });
+//        lv_record.addOnScrollListener(new RecyclerView.OnScrollListener() {
+//            @Override
+//            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+//                super.onScrollStateChanged(recyclerView, newState);
+//                if(newState== RecyclerView.SCROLL_STATE_DRAGGING){
+//                    if (unClosedSwipeView.size() > 0) {
+//                        closeAllOpenedSwipeView();
+//                    }
+//                }
+//            }
+//
+//            @Override
+//            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+//                super.onScrolled(recyclerView, dx, dy);
+//            }
+//        });
     }
 
     @Override
@@ -321,7 +338,7 @@ public class  MainActivity extends AppCompatActivity implements View.OnClickList
                     mMusicList.get(i).setCheck(false);
                 }
 //                adapter.notifyDataSetChanged();
-                adapter.setCbVisibility(cbVisibility);
+                menuAdapter.setCbVisibility(cbVisibility);
                 break;
             case R.id.btn_delete:
 
@@ -347,7 +364,7 @@ public class  MainActivity extends AppCompatActivity implements View.OnClickList
                                     ll_batch.setVisibility(View.GONE);
 //                                    toolbar.setVisibility(View.VISIBLE);
 //                                    adapter.notifyDataSetChanged();
-                                    adapter.setCbVisibility(cbVisibility);
+                                    menuAdapter.setCbVisibility(cbVisibility);
                                 }
                             })
                             .setNegativeButton("取消", null)
@@ -362,6 +379,7 @@ public class  MainActivity extends AppCompatActivity implements View.OnClickList
                     endRecord();
 //                    stopRecord();
                     lv_record.setEnabled(true);
+                    rl_record.setVisibility(View.GONE);
                 }else{
                     checkAudioPermission();
 
@@ -402,6 +420,7 @@ public class  MainActivity extends AppCompatActivity implements View.OnClickList
                                         if(!report.areAllPermissionsGranted()){
                                             Snackbar.make(fab_play,"权限不足，无法开启录音！",Snackbar.LENGTH_SHORT).show();
                                         }else{
+                                            rl_record.setVisibility(View.VISIBLE);
                                             fab_play.setImageResource(R.drawable.ic_media_pause);
                                             startRecord();
                                             lv_record.setEnabled(false);
@@ -519,7 +538,7 @@ public class  MainActivity extends AppCompatActivity implements View.OnClickList
 //                            Log.e("TAG", "chronometer.getBase()="+chronometer.getBase());
 //                            Log.e("TAG", "sumRange="+sumRange);
                             Log.e("TAG", "duration=" + duration);
-                            RecordBean recordBean = new RecordBean(1, name, System.currentTimeMillis(), duration, mRecAudioFile.getName(),mRecAudioFile.getAbsolutePath());
+                            RecordBean recordBean = new RecordBean(1, name, System.currentTimeMillis(), duration, mRecAudioFile.getName(),mRecAudioFile.getAbsolutePath(),whichFolder);
                             dbManager.add(recordBean);
 
 
@@ -559,15 +578,27 @@ public class  MainActivity extends AppCompatActivity implements View.OnClickList
      * 更新列表数据
      */
     private void updateListData() {
-        mMusicList.clear();
-        mRecordList.clear();
-        List<RecordBean> recordBeanList = dbManager.queryAll();
-        for (int i = 0; i < recordBeanList.size(); i++) {
-            mMusicList.add(recordBeanList.get(i));
-            mRecordList.add(recordBeanList.get(i).getCreateName());
-        }
+        new Thread(){
+            public void run(){
+                mMusicList.clear();
+                mRecordList.clear();
+                List<RecordBean> recordBeanList = dbManager.queryAllRecord(whichFolder);
+                for (int i = 0; i < recordBeanList.size(); i++) {
+                    mMusicList.add(recordBeanList.get(i));
+                    mRecordList.add(recordBeanList.get(i).getCreateName());
+                }
 
-        adapter.notifyDataSetChanged();
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        menuAdapter.notifyDataSetChanged();
+                    }
+                });
+            }
+        }.start();
+
+
+
     }
 
     /**
@@ -586,6 +617,9 @@ public class  MainActivity extends AppCompatActivity implements View.OnClickList
     }
 
     private void startRecord() {
+        if(mRecAudioPath==null){
+            checkStorePromission();
+        }
 //        isRecording=true;
         try
         {
@@ -627,36 +661,6 @@ public class  MainActivity extends AppCompatActivity implements View.OnClickList
 
     }
 
-    @Override
-    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-//        /* 得到被点击的文件 */
-//        File playfile = new File(mRecAudioPath.getAbsolutePath() + File.separator
-//                + mRecordList.get(position));
-//        /* 播放 */
-//        playMusic(playfile);
-        Log.e("TAG", "onItemClick=");
-        if(cbVisibility){
-            ViewHolder viewHolder = (ViewHolder) view.getTag();
-            viewHolder.cb_select.toggle();
-            Log.e("TAG", "viewHolder.cb_select.isChecked()="+viewHolder.cb_select.isChecked());
-            if(viewHolder.cb_select.isChecked()){
-                mMusicList.get(position).setCheck(true);
-            }else{
-                mMusicList.get(position).setCheck(false);
-            }
-        }else{
-
-            Intent intent = new Intent(this, ClockActivity.class);
-            intent.putExtra("createName",mRecordList.get(position));
-            startActivity(intent);
-
-//            Intent intent = new Intent(this, PlayActivity.class);
-//            intent.putExtra("position",position);
-//            intent.putExtra("recordName",mMusicList.get(position).getName());
-//
-//            startActivity(intent);
-        }
-    }
 
     /* 播放录音文件 */
     private void playMusic(File file)
@@ -678,90 +682,100 @@ public class  MainActivity extends AppCompatActivity implements View.OnClickList
     /* 播放列表 */
     public void musicList()
     {
-        if (Environment.getExternalStorageState().equals(
-                Environment.MEDIA_MOUNTED))// 手机有SD卡的情况
-        {
-            // 在这里我们创建一个文件，用于保存录制内容
-            mRecAudioPath = new File(Environment.getExternalStorageDirectory()
-                    .getAbsolutePath() + "/data/files/");
-            mRecAudioPath.mkdirs();// 创建文件夹
-        } else// 手机无SD卡的情况
-        {
-            mRecAudioPath = this.getCacheDir();
-        }
 
-        // 取得指定位置的文件设置显示到播放列表
-        File home = mRecAudioPath;
-        if (home.listFiles(new MusicFilter()).length > 0)
-        {
-//            for (File file : home.listFiles(new MusicFilter()))
-//            {
-//                mMusicList.add(file.getName());
-//            }
-            File[] files = home.listFiles(new MusicFilter());
-            Log.e("TAG", "1");
+//        if (Environment.getExternalStorageState().equals(
+//                Environment.MEDIA_MOUNTED))// 手机有SD卡的情况
+//        {
+//            // 在这里我们创建一个文件，用于保存录制内容
+//            mRecAudioPath = new File(Environment.getExternalStorageDirectory()
+//                    .getAbsolutePath() + "/data/files/");
+//            mRecAudioPath.mkdirs();// 创建文件夹
+//        } else// 手机无SD卡的情况
+//        {
+//            mRecAudioPath = this.getCacheDir();
+//        }
 
-//            for(int i=0;i<files.length;i++){
-//                String name = files[i].getName();
-//                if(("newrecord"+(i+1)+".amr").equals(name)){
-//                    fileCount=i+1;
-//                }
+        new Thread(){
+            public void run(){
+                // 取得指定位置的文件设置显示到播放列表
+                File home = mRecAudioPath;
+                if (home.listFiles(new MusicFilter()).length > 0)
+                {
+                    File[] files = home.listFiles(new MusicFilter());
+                    Log.e("TAG", "1");
 
 
-//                mMusicList.add(name);
-//            }
+                    mMusicList.clear();
+                    mRecordList.clear();
 
-            mMusicList.clear();
-            mRecordList.clear();
-
-            List<RecordBean> recordBeen = dbManager.queryAll();
-            for(int i=0;i<recordBeen.size();i++){
-                RecordBean recordBean = recordBeen.get(i);
+                    List<RecordBean> recordBeen = dbManager.queryAll();
+                    for(int i=0;i<recordBeen.size();i++){
+                        RecordBean recordBean = recordBeen.get(i);
 
 //                if(("新录音"+(i+1)).equalsIgnoreCase(recordBean.getName())){
 //                    fileCount=i+1;
 //                }
-                Log.e("TAG", "fileCount="+fileCount);
-                boolean have=false;
-                for(int j=0;j<files.length;j++){
-                    if(files[j].getName().equalsIgnoreCase(recordBean.getCreateName())){
-                        mMusicList.add(recordBean);
-                        mRecordList.add(recordBean.getCreateName());
-                        have=true;
-                        break;
-                    }
-                }
-                if(!have){
-                    dbManager.delete(recordBean.getCreateName());
-                }
+                        Log.e("TAG", "fileCount="+fileCount);
+                        boolean have=false;
+                        for(int j=0;j<files.length;j++){
+                            if(files[j].getName().equalsIgnoreCase(recordBean.getCreateName())){
+//                        if(recordBean.getWhichFolder()==whichFolder){
 
-            }
-            Intent intent = getIntent();
-            String name = intent.getStringExtra("name");
-            Log.e("TAG", "musicList name="+name);
-            int position=-1;
-            for (int i = 0; i < mMusicList.size(); i++) {
-                if(mMusicList.get(i).getName().equalsIgnoreCase(name)){
-                    position=i;
-                    break;
-                }
-            }
+
+//                        }
+                                have=true;
+                                break;
+                            }
+                        }
+                        if(!have){
+                            dbManager.delete(recordBean.getCreateName());
+                        }
+
+                    }
+                    List<RecordBean> recordBeen1 = dbManager.queryAllRecord(whichFolder);
+                    for(int i=0;i<recordBeen1.size();i++){
+                        mMusicList.add(recordBeen1.get(i));
+                        mRecordList.add(recordBeen1.get(i).getCreateName());
+                    }
+                    Log.e("TAG", "musicList name="+createName);
+                    int position=-1;
+                    for (int i = 0; i < mMusicList.size(); i++) {
+                        if(mMusicList.get(i).getCreateName().equalsIgnoreCase(createName)){
+                            position=i;
+                            break;
+                        }
+                    }
 //            mMusicList.get(position).setShake(true);
 //            adapter.notifyDataSetChanged();
 //            lv_record.setSelection(position);
 
-            if(position!=-1){
-                appbar.setExpanded(false);
-                mMusicList.get(position).setShake(true);
-                adapter.notifyDataSetChanged();
+                    if(position!=-1){
+                        mMusicList.get(position).setShake(true);
+                        final int finalPosition = position;
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                menuAdapter.notifyDataSetChanged();
 
-                lv_record.scrollToPosition(position);
-            }else{
-                adapter.notifyDataSetChanged();
+                                lv_record.scrollToPosition(finalPosition);
+                            }
+                        });
+
+                    }else{
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                menuAdapter.notifyDataSetChanged();
+                            }
+                        });
+
+                    }
+                }else{
+                    dbManager.deleteAll();
+                }
             }
-        }else{
-            dbManager.deleteAll();
-        }
+        }.start();
+
     }
 
 
@@ -778,25 +792,25 @@ public class  MainActivity extends AppCompatActivity implements View.OnClickList
      * @param position
      */
     private void deleteRecordFile(final int position) {
-    /* 得到被点击的文件 */
-        final File playfile = new File(mRecAudioPath.getAbsolutePath() + File.separator
-                + mRecordList.get(position));
-        final String createName = mRecordList.get(position);
-//        new AlertDialog.Builder(this)
-//                .setTitle("确定要删除吗？")
-//                .setPositiveButton("确定", new DialogInterface.OnClickListener() {
-//                    @Override
-//                    public void onClick(DialogInterface dialog, int which) {
-                        playfile.delete();
-                        dbManager.delete(createName);
 
-                        mMusicList.remove(position);
+        new Thread(){
+            public void run(){
+                /* 得到被点击的文件 */
 
-                        adapter.notifyDataSetChanged();
+                final File playfile = new File(mRecAudioPath.getAbsolutePath() + File.separator
+                        + mRecordList.get(position));
+                final String createName = mRecordList.get(position);
+                playfile.delete();
+                dbManager.delete(createName);
+            }
+        }.start();
+
+
+        mMusicList.remove(position);
+
+        menuAdapter.notifyItemChanged(position);
 //                    }
 //                })
-//                .setNegativeButton("取消", null)
-//                .show();
     }
 
     /* 过滤文件类型 */
@@ -808,230 +822,19 @@ public class  MainActivity extends AppCompatActivity implements View.OnClickList
         }
     }
 
-    class MyAdapter extends BaseAdapter {
-        @Override
-        public int getCount() {
-            return mMusicList.size();
-        }
 
-        @Override
-        public Object getItem(int position) {
-            return null;
-        }
-
-        @Override
-        public long getItemId(int position) {
-            return 0;
-        }
-
-        @Override
-        public View getView(final int position, View convertView, ViewGroup parent) {
-            ViewHolder holder=null;
-            if(convertView==null){
-                holder=new ViewHolder();
-                convertView=View.inflate(MainActivity.this,R.layout.item,null);
-                holder.tv_create_time= (TextView) convertView.findViewById(R.id.tv_create_time);
-                holder.tv_record_name= (TextView) convertView.findViewById(R.id.tv_record_name);
-                holder.tv_clock_time= (TextView) convertView.findViewById(R.id.tv_clock_time);
-                holder.id_time= (TextView) convertView.findViewById(R.id.id_time);
-                holder.id_recorder_length= (FrameLayout) convertView.findViewById(R.id.id_recorder_length);
-                holder.mAnimView= convertView.findViewById(R.id.id_recorder_anim);
-                holder.cb_select= (CheckBox) convertView.findViewById(R.id.cb_select);
-
-
-
-                holder.delete = (TextView) convertView.findViewById(R.id.delete);
-                holder.swipeView = (SwipeView) convertView.findViewById(R.id.swipeView);
-                holder.ll_content= (LinearLayout) convertView.findViewById(R.id.ll_content);
-//                holder.sb_record= (SeekBar) convertView.findViewById(R.id.sb_record);
-//                holder.tv_start_time= (TextView) convertView.findViewById(R.id.tv_start_time);
-//                holder.tv_end_start= (TextView) convertView.findViewById(R.id.tv_end_start);
-//                holder.btn_start= (ImageView) convertView.findViewById(R.id.btn_start);
-//                holder.btn_stop= (ImageView) convertView.findViewById(R.id.btn_stop);
-//                holder.ll_bottom= (LinearLayout) convertView.findViewById(R.id.ll_bottom);
-
-
-                convertView.setTag(holder);
-
-            }else{
-                holder = (ViewHolder) convertView.getTag();
-            }
-            /**
-             * 说话的动画
-             */
-//            if(mAnimView != null)
-//            {
-//                mAnimView.setBackgroundResource(R.drawable.adj);
-//                mAnimView = null;
-//            }
-//            mAnimView=convertView.findViewById(R.id.id_recorder_anim);
-
-            final int lastPosition=position;
-            final RecordBean recordBean = mMusicList.get(position);
-            holder.tv_create_time.setText(CommentUtils.longToYMDHMS(recordBean.getCreateDate()));
-            holder.tv_record_name.setText(recordBean.getName());
-            holder.id_time.setText(CommentUtils.longToHMS(recordBean.getDuration())+ "\"");
-            long clockTime = recordBean.getClockTime();
-            if(clockTime!=0){
-                if(clockTime>System.currentTimeMillis()&&recordBean.getIsAlert()!=0){
-                    holder.tv_clock_time.setTextColor(getResources().getColor(R.color.red));
-                }else{
-                    holder.tv_clock_time.setTextColor(getResources().getColor(R.color.gray));
-                }
-                holder.tv_clock_time.setText (CommentUtils.longToYMDHMS(recordBean.getClockTime()));
-            }else{
-                holder.tv_clock_time.setTextColor(getResources().getColor(R.color.gray));
-                holder.tv_clock_time.setText ("未设置");
-            }
-            if(cbVisibility){
-                holder.cb_select.setVisibility(View.VISIBLE);
-                holder.cb_select.setChecked(recordBean.isCheck());
-            }else{
-                holder.cb_select.setVisibility(View.GONE);
-            }
-//            AlphaAnimation alphaAnimation1 = new AlphaAnimation(0.1f, 1.0f);
-//            alphaAnimation1.setDuration(1000);
-//            alphaAnimation1.setRepeatCount(5);
-//            alphaAnimation1.setRepeatMode(Animation.REVERSE);
-            Animation alphaAnimation1 = AnimationUtils.loadAnimation(
-                    MainActivity.this, R.anim.myanim);
-            alphaAnimation1.setAnimationListener(new Animation.AnimationListener() {
-                @Override
-                public void onAnimationStart(Animation animation) {
-
-                }
-
-                @Override
-                public void onAnimationEnd(Animation animation) {
-                    recordBean.setShake(false);
-                }
-
-                @Override
-                public void onAnimationRepeat(Animation animation) {
-
-                }
-            });
-            if(recordBean.isShake()){
-
-                convertView.setAnimation(alphaAnimation1);
-                alphaAnimation1.start();
-
-//                recordBean.setShake(false);
-                mMusicList.set(position,recordBean);
-            }else{
-                convertView.clearAnimation();
-            }
-            final ViewHolder finalHolder = holder;
-            final View finalView=convertView;
-            holder.id_recorder_length.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    finalView.clearAnimation();
-                    finalHolder.mAnimView.setBackgroundResource(R.drawable.play_anim);
-                    AnimationDrawable anim = (AnimationDrawable) finalHolder.mAnimView.getBackground();
-                    anim.start();
-                     /* 得到被点击的文件 */
-                    File playfile = new File(mRecAudioPath.getAbsolutePath() + File.separator
-                            + recordBean.getCreateName());
-                    /* 播放 */
-                    //播放音频
-                    MediaManager.playSound(playfile.getAbsolutePath() , new MediaPlayer.OnCompletionListener() {
-
-                        @Override
-                        public void onCompletion(MediaPlayer mp) {
-                            finalHolder.mAnimView.setBackgroundResource(R.drawable.adj);
-                        }
-                    });
-                }
-            });
-
-
-
-            holder.swipeView.setOnSwipeStatusChangeListener(MainActivity.this);
-
-            holder.swipeView.fastClose();
-
-
-            holder.delete.setText("删除");
-
-            holder.delete.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    deleteRecordFile(lastPosition);
-                }
-            });
-
-            holder.ll_content.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    if(cbVisibility){
-
-                        finalHolder.cb_select.toggle();
-                        Log.e("TAG", "viewHolder.cb_select.isChecked()="+finalHolder.cb_select.isChecked());
-                        if(finalHolder.cb_select.isChecked()){
-                            mMusicList.get(position).setCheck(true);
-                        }else{
-                            mMusicList.get(position).setCheck(false);
-                        }
-                    }else{
-                        if (unClosedSwipeView.size() > 0) {
-                            closeAllOpenedSwipeView();
-                        } else {
-                            Intent intent = new Intent(MainActivity.this, ClockActivity.class);
-                            intent.putExtra("createName",mRecordList.get(lastPosition));
-                            startActivity(intent);
-                        }
-                    }
-
-
-                }
-            });
-
-            holder.ll_content.setOnCreateContextMenuListener(new View.OnCreateContextMenuListener() {
-                @Override
-                public void onCreateContextMenu(ContextMenu menu, View view, ContextMenu.ContextMenuInfo contextMenuInfo) {
-                    if (unClosedSwipeView.size() > 0) {
-                        closeAllOpenedSwipeView();
-                    } else {
-                        selectedPosition=lastPosition;
-                        menu.add(0, 1, 0, "播放");
-                        menu.add(0, 2, 0, "重命名");
-                        menu.add(0,3,0,"取消提醒");
-                        menu.add(0,4,0,"批量删除");
-                    }
-
-                }
-            });
-
-            return convertView;
-        }
-
-
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        backFolderActivity();
     }
 
-   static class ViewHolder{
-        TextView tv_record_name;
-        TextView tv_create_time;
-        TextView tv_duration;
-        TextView id_time;
-        ImageView iv_clock;
-
-       TextView tv_clock_time;
-        FrameLayout id_recorder_length;
-       View mAnimView;//播放声音的动画
-       CheckBox cb_select;
-
-       SwipeView swipeView;
-       TextView delete;
-        LinearLayout ll_content;
-
-//       SeekBar sb_record;
-//       TextView tv_start_time;
-//       TextView tv_end_start;
-//       ImageView btn_start;
-//       ImageView btn_stop;
-//       LinearLayout ll_bottom;
+    private void backFolderActivity() {
+        Intent intent = new Intent(this, FolderActivity.class);
+        startActivity(intent);
+        finish();
     }
+
 
 
 
@@ -1067,31 +870,57 @@ public class  MainActivity extends AppCompatActivity implements View.OnClickList
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
-        stopNotificationMusic();
-
         setIntent(intent);
-        String name = intent.getStringExtra("name");
-        Log.e("TAG", "onnewIntent name="+name);
-        int position=-1;
-        mMusicList.clear();
-        mRecordList.clear();
-        List<RecordBean> recordBeanList = dbManager.queryAll();
-        for (int i = 0; i < recordBeanList.size(); i++) {
-            mMusicList.add(recordBeanList.get(i));
-            mRecordList.add(recordBeanList.get(i).getCreateName());
-            if(recordBeanList.get(i).getName().equalsIgnoreCase(name)){
-                position=i;
-            }
-        }
-        if(position!=-1){
-            appbar.setExpanded(false);
-            mMusicList.get(position).setShake(true);
-            adapter.notifyDataSetChanged();
+        final Intent finalIntent=intent;
 
-            lv_record.scrollToPosition(position);
-        }else{
-            adapter.notifyDataSetChanged();
-        }
+
+        new Thread(){
+            public void run(){
+                stopNotificationMusic();
+                folderName = finalIntent.getStringExtra("folderName");
+                Log.e("TAG", "Mainactivity folderName="+folderName);
+                String createName = finalIntent.getStringExtra("createName");
+                Log.e("TAG", "onnewIntent createName="+createName);
+                whichFolder = finalIntent.getStringExtra("whichFolder");
+
+
+                int position=-1;
+                mMusicList.clear();
+                mRecordList.clear();
+                List<RecordBean> recordBeanList = dbManager.queryAllRecord(whichFolder);
+                for (int i = 0; i < recordBeanList.size(); i++) {
+                    mMusicList.add(recordBeanList.get(i));
+                    mRecordList.add(recordBeanList.get(i).getCreateName());
+                    if(recordBeanList.get(i).getCreateName().equalsIgnoreCase(createName)){
+                        position=i;
+                    }
+                }
+                if(position!=-1){
+                    mMusicList.get(position).setShake(true);
+
+                    final int finalPosition = position;
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            menuAdapter.notifyDataSetChanged();
+
+                            lv_record.scrollToPosition(finalPosition);
+                        }
+                    });
+
+                }else{
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            toolbar.setTitle(folderName);
+                            menuAdapter.notifyDataSetChanged();
+                        }
+                    });
+
+                }
+            }
+        }.start();
+
 
 
     }
@@ -1102,29 +931,6 @@ public class  MainActivity extends AppCompatActivity implements View.OnClickList
         MediaManager.resume();
     }
 
-
-
-    /**
-     * 创建上下文菜单选项
-     */
-//    @Override
-//    public void onCreateContextMenu(ContextMenu menu, View v,
-//                                    ContextMenu.ContextMenuInfo menuInfo) {
-//
-//        //1.通过手动添加来配置上下文菜单选项
-//        menu.add(0, 1, 0, "删除");
-//        menu.add(0, 2, 0, "重命名");
-//        menu.add(0,3,0,"取消提醒");
-//        menu.add(0,4,0,"批量删除");
-//        //2.通过xml文件来配置上下文菜单选项
-////        MenuInflater mInflater = getMenuInflater();
-////        mInflater.inflate(R.menu.cmenu, menu);
-//
-////        super.onCreateContextMenu(menu, v, menuInfo);
-//
-//        super.onCreateContextMenu(menu,v,menuInfo);
-//    }
-
     /**
      * 当菜单某个选项被点击时调用该方法
      */
@@ -1132,7 +938,7 @@ public class  MainActivity extends AppCompatActivity implements View.OnClickList
     public boolean onContextItemSelected(MenuItem item) {
 //        final int selectedPosition = ((AdapterView.AdapterContextMenuInfo) item.getMenuInfo()).position;
 
-       selectedPosition= adapter.getSelectedPosition();
+       selectedPosition= menuAdapter.getSelectedPosition();
         final RecordBean recordBean = mMusicList.get(selectedPosition);
         switch(item.getItemId()){
             case 2:
@@ -1149,7 +955,8 @@ public class  MainActivity extends AppCompatActivity implements View.OnClickList
                                         dbManager.update(name,recordBean.getCreateName());
                                         recordBean.setName(name);
                                         mMusicList.set(selectedPosition,recordBean);
-                                        adapter.notifyDataSetChanged();
+//                                        menuAdapter.notifyDataSetChanged();
+                                        menuAdapter.notifyItemChanged(selectedPosition);
                                     }
                                 }
                             })
@@ -1173,14 +980,18 @@ public class  MainActivity extends AppCompatActivity implements View.OnClickList
                 CommentUtils.showToast(this,"取消成功！");
                 recordBean.setIsAlert(0);
                 mMusicList.set(selectedPosition,recordBean);
-                adapter.notifyDataSetChanged();
+//                menuAdapter.notifyDataSetChanged();
+                menuAdapter.notifyItemChanged(selectedPosition);
                 break;
             case 4:
                 cbVisibility=true;
                 ll_batch.setVisibility(View.VISIBLE);
 //                toolbar.setVisibility(View.GONE);
-                adapter.setCbVisibility(cbVisibility);
+                menuAdapter.setCbVisibility(cbVisibility);
                 break;
+//            case 2:
+//                deleteRecordFile(selectedPosition);
+//                break;
 
         }
         return super.onContextItemSelected(item);
@@ -1192,43 +1003,6 @@ public class  MainActivity extends AppCompatActivity implements View.OnClickList
         }
     }
 
-    private ArrayList<SwipeView> unClosedSwipeView = new ArrayList<>();
-
-    @Override
-    public void onOpen(SwipeView openedSwipeView) {
-
-        for (int i = 0; i < unClosedSwipeView.size(); i++) {
-            if (unClosedSwipeView.get(i) != openedSwipeView) {
-                unClosedSwipeView.get(i).close();
-            }
-        }
-        if (!unClosedSwipeView.contains(openedSwipeView)) {
-            unClosedSwipeView.add(openedSwipeView);
-        }
-    }
-
-    @Override
-    public void onClose(SwipeView closedSwipeView) {
-        unClosedSwipeView.remove(closedSwipeView);
-    }
-
-    @Override
-    public void onSwiping(SwipeView swipingSwipeView) {
-        if (!unClosedSwipeView.contains(swipingSwipeView)) {
-//            closeAllOpenedSwipeView();
-            unClosedSwipeView.add(swipingSwipeView);
-        }
-
-    }
-
-
-    private void closeAllOpenedSwipeView() {
-        for (int i = 0; i < unClosedSwipeView.size(); i++) {
-            if (unClosedSwipeView.get(i).getSwipeStatus() != SwipeView.SwipeStatus.Close) {
-                unClosedSwipeView.get(i).close();
-            }
-        }
-    }
 
 
 
@@ -1354,5 +1128,71 @@ public class  MainActivity extends AppCompatActivity implements View.OnClickList
         }
     }
 
+    /**
+     * 菜单创建器。在Item要创建菜单的时候调用。
+     */
+    private SwipeMenuCreator swipeMenuCreator = new SwipeMenuCreator() {
+        @Override
+        public void onCreateMenu(SwipeMenu swipeLeftMenu, SwipeMenu swipeRightMenu, int viewType) {
+            int height = getResources().getDimensionPixelSize(R.dimen.item_height);
 
+            // MATCH_PARENT 自适应高度，保持和内容一样高；也可以指定菜单具体高度，也可以用WRAP_CONTENT。
+            int width = getResources().getDimensionPixelSize(R.dimen.item_width);
+
+
+            // 添加右侧的，如果不添加，则右侧不会出现菜单。
+            {
+                SwipeMenuItem deleteItem = new SwipeMenuItem(mContext)
+                        .setBackgroundDrawable(R.drawable.selector_red)
+                        .setText("删除") // 文字，还可以设置文字颜色，大小等。。
+                        .setTextColor(Color.WHITE)
+                        .setWidth(width)
+                        .setHeight(height);
+                swipeRightMenu.addMenuItem(deleteItem);// 添加一个按钮到右侧侧菜单。
+            }
+        }
+    };
+
+    /**
+     * 菜单点击监听。
+     */
+    private OnSwipeMenuItemClickListener menuItemClickListener = new OnSwipeMenuItemClickListener() {
+        /**
+         * Item的菜单被点击的时候调用。
+         * @param closeable       closeable. 用来关闭菜单。
+         * @param adapterPosition adapterPosition. 这个菜单所在的item在Adapter中position。
+         * @param menuPosition    menuPosition. 这个菜单的position。比如你为某个Item创建了2个MenuItem，那么这个position可能是是 0、1，
+         * @param direction       如果是左侧菜单，值是：SwipeMenuRecyclerView#LEFT_DIRECTION，如果是右侧菜单，值是：SwipeMenuRecyclerView#RIGHT_DIRECTION.
+         */
+        @Override
+        public void onItemClick(Closeable closeable, int adapterPosition, int menuPosition, int direction) {
+            closeable.smoothCloseMenu();// 关闭被点击的菜单。
+
+            if (direction == SwipeMenuRecyclerView.RIGHT_DIRECTION) {
+                Toast.makeText(mContext, "list第" + adapterPosition + "; 右侧菜单第" + menuPosition, Toast.LENGTH_SHORT).show();
+            } else if (direction == SwipeMenuRecyclerView.LEFT_DIRECTION) {
+                Toast.makeText(mContext, "list第" + adapterPosition + "; 左侧菜单第" + menuPosition, Toast.LENGTH_SHORT).show();
+            }
+
+            // TODO 如果是删除：推荐调用Adapter.notifyItemRemoved(position)，不推荐Adapter.notifyDataSetChanged();
+            if (menuPosition == 0) {// 删除按钮被点击。
+//                mMusicList.remove(adapterPosition);
+//                menuAdapter.notifyItemRemoved(adapterPosition);
+                deleteRecordFile(adapterPosition);
+            }
+        }
+    };
+
+
+    private OnItemClickListener onItemClickListener = new OnItemClickListener() {
+        @Override
+        public void onItemClick(int position) {
+//            Toast.makeText(mContext, "我是第" + position + "条。", Toast.LENGTH_SHORT).show();
+            if(menuAdapter.isCbVisibility()){
+                menuAdapter.setCbVisibility(false);
+            }else{
+                menuAdapter.setCbVisibility(true);
+            }
+        }
+    };
 }

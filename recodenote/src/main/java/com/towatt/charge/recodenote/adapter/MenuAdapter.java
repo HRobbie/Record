@@ -1,10 +1,24 @@
+/*
+ * Copyright 2016 Yan Zhenjie
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.towatt.charge.recodenote.adapter;
 
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.AnimationDrawable;
 import android.media.MediaPlayer;
-import android.support.design.widget.AppBarLayout;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.ContextMenu;
@@ -16,37 +30,34 @@ import android.view.animation.AnimationUtils;
 import android.widget.CheckBox;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.towatt.charge.recodenote.ClockActivity;
 import com.towatt.charge.recodenote.R;
+import com.towatt.charge.recodenote.bean.FolderBean;
 import com.towatt.charge.recodenote.bean.RecordBean;
 import com.towatt.charge.recodenote.db.DBManager;
+import com.towatt.charge.recodenote.listener.OnItemClickListener;
 import com.towatt.charge.recodenote.manager.MediaManager;
 import com.towatt.charge.recodenote.utils.CommentUtils;
-import com.towatt.charge.recodenote.view.SwipeView;
+import com.yanzhenjie.recyclerview.swipe.SwipeMenuAdapter;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
- * user:HRobbie
- * Date:2016/8/26
- * Time:11:50
- * 邮箱：hwwyouxiang@163.com
- * Description:Page Function.
+ * Created by YOLANDA on 2016/7/22.
  */
-public class RecordAdapter extends RecyclerView.Adapter{
+public class MenuAdapter extends SwipeMenuAdapter{
+
     private Context mContext;
     private List<RecordBean> recordBeanList;
-    private OnItemClickListener listener;
-    private ArrayList<SwipeView> unClosedSwipeView = new ArrayList<>();
+    private OnItemClickListener mOnItemClickListener;
     private boolean cbVisibility;
     private int selectedPosition;
 
-    private AppBarLayout appbar;
+    private View lastView;
+
     public boolean isCbVisibility() {
         return cbVisibility;
     }
@@ -65,13 +76,6 @@ public class RecordAdapter extends RecyclerView.Adapter{
         this.selectedPosition = selectedPosition;
     }
 
-    public RecordAdapter(Context mContext, List<RecordBean> recordBeanList, boolean cbVisibility) {
-        this.mContext = mContext;
-        this.recordBeanList = recordBeanList;
-
-
-        dbManager=new DBManager(mContext);
-    }
     private int position;
 
     private DBManager dbManager;
@@ -82,26 +86,22 @@ public class RecordAdapter extends RecyclerView.Adapter{
     public void setPosition(int position) {
         this.position = position;
     }
-    @Override
-    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-//        View view;
-//        if(cbVisibility){
-//            view= LayoutInflater.from(mContext).inflate(R.layout.item, parent, false);
-//        }else{
-//
-//            view= LayoutInflater.from(mContext).inflate(R.layout.item1, parent, false);
-//        }
+    public MenuAdapter(Context mContext, List<RecordBean> recordBeanList) {
+        this.mContext = mContext;
+        this.recordBeanList = recordBeanList;
 
-//        View view = View.inflate(mContext, R.layout.item, null);
+        dbManager=new DBManager(mContext);
+    }
 
-        View view= LayoutInflater.from(mContext).inflate(R.layout.item, parent, false);
-        return new RecordHolder(view);
+    public void setOnItemClickListener(OnItemClickListener onItemClickListener) {
+        this.mOnItemClickListener = onItemClickListener;
     }
 
     @Override
-    public void onBindViewHolder(final RecyclerView.ViewHolder holder, int position) {
+    public void onBindViewHolder(RecyclerView.ViewHolder holder, final int position) {
+
         final int finalPosition=position;
-        RecordHolder recordHolder= (RecordHolder) holder;
+        final RecordHolder recordHolder= (RecordHolder) holder;
         RecordBean recordBean = recordBeanList.get(position);
         final RecordBean finalRecordBean=recordBean;
         recordHolder.tv_create_time.setText(CommentUtils.longToYMDHMS(recordBean.getCreateDate()));
@@ -127,10 +127,6 @@ public class RecordAdapter extends RecyclerView.Adapter{
         }else{
             recordHolder.cb_select.setVisibility(View.GONE);
         }
-//            AlphaAnimation alphaAnimation1 = new AlphaAnimation(0.1f, 1.0f);
-//            alphaAnimation1.setDuration(1000);
-//            alphaAnimation1.setRepeatCount(5);
-//            alphaAnimation1.setRepeatMode(Animation.REVERSE);
         Animation alphaAnimation1 = AnimationUtils.loadAnimation(
                 mContext, R.anim.myanim);
         alphaAnimation1.setAnimationListener(new Animation.AnimationListener() {
@@ -165,10 +161,13 @@ public class RecordAdapter extends RecyclerView.Adapter{
         recordHolder.id_recorder_length.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                finalHolder.itemView.clearAnimation();
-
+                if(lastView!=null){
+                    lastView.clearAnimation();
+                    lastView.setBackgroundResource(R.drawable.adj);
+                }
 
                 finalHolder.mAnimView.setBackgroundResource(R.drawable.play_anim);
+                lastView =finalHolder.mAnimView;
                 AnimationDrawable anim = (AnimationDrawable) finalHolder.mAnimView.getBackground();
                 anim.start();
                      /* 得到被点击的文件 */
@@ -179,57 +178,30 @@ public class RecordAdapter extends RecyclerView.Adapter{
 
                     @Override
                     public void onCompletion(MediaPlayer mp) {
+                        finalHolder.mAnimView.clearAnimation();
                         finalHolder.mAnimView.setBackgroundResource(R.drawable.adj);
                     }
                 });
             }
         });
 
-
-
-        recordHolder.swipeView.setOnSwipeStatusChangeListener(new SwipeView.OnSwipeStatusChangeListener() {
+        recordHolder.itemView.setOnCreateContextMenuListener(new View.OnCreateContextMenuListener() {
             @Override
-            public void onOpen(SwipeView openedSwipeView) {
-                for (int i = 0; i < unClosedSwipeView.size(); i++) {
-                    if (unClosedSwipeView.get(i) != openedSwipeView) {
-                        unClosedSwipeView.get(i).close();
-                    }
+            public void onCreateContextMenu(ContextMenu menu, View view, ContextMenu.ContextMenuInfo contextMenuInfo) {
+                    selectedPosition=position;
+                    menu.add(0, 1, 0, "播放");
+//                    menu.add(0,2,0,"删除");
+                    menu.add(0, 2, 0, "重命名");
+                    menu.add(0,3,0,"取消提醒");
+                    menu.add(0,4,0,"批量删除");
                 }
-                if (!unClosedSwipeView.contains(openedSwipeView)) {
-                    unClosedSwipeView.add(openedSwipeView);
-                }
-            }
-
-            @Override
-            public void onClose(SwipeView closedSwipeView) {
-                unClosedSwipeView.remove(closedSwipeView);
-            }
-
-            @Override
-            public void onSwiping(SwipeView swipingSwipeView) {
-                if (!unClosedSwipeView.contains(swipingSwipeView)) {
-//            closeAllOpenedSwipeView();
-                    unClosedSwipeView.add(swipingSwipeView);
-                }
-            }
         });
-
-        recordHolder.swipeView.fastClose();
-
-
-        recordHolder.delete.setText("删除");
-
-        recordHolder.delete.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                unClosedSwipeView.clear();
-                deleteRecordFile(finalPosition);
-            }
-        });
-
-        recordHolder.ll_content.setOnClickListener(new View.OnClickListener() {
+        recordHolder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+//                mOnItemClickListener.onItemClick(finalPosition);
+
+
                 if(cbVisibility){
 
                     finalHolder.cb_select.toggle();
@@ -240,40 +212,32 @@ public class RecordAdapter extends RecyclerView.Adapter{
                         recordBeanList.get(finalPosition).setCheck(false);
                     }
                 }else{
-                    if (unClosedSwipeView.size() > 0) {
-                        closeAllOpenedSwipeView();
-                    } else {
+
                         Intent intent = new Intent(mContext, ClockActivity.class);
                         intent.putExtra("createName",recordBeanList.get(finalPosition).getCreateName());
+                        FolderBean folderBean = dbManager.queryFolderByWhich(recordBeanList.get(finalPosition).getWhichFolder());
+                        intent.putExtra("folderName",folderBean.getFolderName());
                         mContext.startActivity(intent);
                     }
-                }
-
-
-            }
-        });
-
-        recordHolder.ll_content.setOnCreateContextMenuListener(new View.OnCreateContextMenuListener() {
-            @Override
-            public void onCreateContextMenu(ContextMenu menu, View view, ContextMenu.ContextMenuInfo contextMenuInfo) {
-                if (unClosedSwipeView.size() > 0) {
-                    closeAllOpenedSwipeView();
-                } else {
-                    selectedPosition=finalPosition;
-                    menu.add(0, 1, 0, "播放");
-                    menu.add(0, 2, 0, "重命名");
-                    menu.add(0,3,0,"取消提醒");
-                    menu.add(0,4,0,"批量删除");
-                }
-
             }
         });
     }
 
     @Override
     public int getItemCount() {
-        return recordBeanList.size();
+        return recordBeanList == null ? 0 : recordBeanList.size();
     }
+
+    @Override
+    public View onCreateContentView(ViewGroup parent, int viewType) {
+        return LayoutInflater.from(parent.getContext()).inflate(R.layout.item_card_record, parent, false);
+    }
+
+    @Override
+    public RecyclerView.ViewHolder onCompatCreateViewHolder(View realContentView, int viewType) {
+        return new RecordHolder(realContentView);
+    }
+
 
     class RecordHolder extends RecyclerView.ViewHolder{
         public TextView tv_record_name;
@@ -289,9 +253,6 @@ public class RecordAdapter extends RecyclerView.Adapter{
 
         CheckBox cb_select;
 
-        SwipeView swipeView;
-        TextView delete;
-        LinearLayout ll_content;
 
         public RecordHolder(View itemView) {
             super(itemView);
@@ -303,90 +264,8 @@ public class RecordAdapter extends RecyclerView.Adapter{
             mAnimView= itemView.findViewById(R.id.id_recorder_anim);
 
             cb_select= (CheckBox) itemView.findViewById(R.id.cb_select);
-            swipeView= (SwipeView) itemView.findViewById(R.id.swipeView);
-            delete= (TextView) itemView.findViewById(R.id.delete);
-            ll_content= (LinearLayout) itemView.findViewById(R.id.ll_content);
-
-
-//            if(cbVisibility){
-//                cb_select.setVisibility(View.GONE);
-//            }else{
-//                cb_select.setVisibility(View.VISIBLE);
-//            }
-
 
         }
-
-//        @Override
-//        public void onCreateContextMenu(ContextMenu menu, View view, ContextMenu.ContextMenuInfo contextMenuInfo) {
-//            //1.通过手动添加来配置上下文菜单选项
-//            menu.add(0, 1, 0, "删除");
-//            menu.add(0, 2, 0, "重命名");
-//            menu.add(0,3,0,"取消提醒");
-//        }
-
-
-
     }
-
-    /**
-     * 内部接口回调方法
-     */
-    public interface OnItemClickListener {
-        void onItemClick(int position, Object object);
-    }
-
-    /**
-     * 设置监听方法
-     *
-     * @param listener
-     */
-    public void setOnItemClickListener(OnItemClickListener listener) {
-
-        this.listener = listener;
-    }
-
-    @Override
-    public void onViewRecycled(RecyclerView.ViewHolder holder) {
-        holder.itemView.setOnLongClickListener(null);
-        super.onViewRecycled(holder);
-    }
-
-
-    /**
-     * 删除录音文件
-     * @param position
-     */
-    private void deleteRecordFile(final int position) {
-    /* 得到被点击的文件 */
-        final File playfile = new File(recordBeanList.get(position).getStorePosition());
-        final String createName = recordBeanList.get(position).getCreateName();
-//        new AlertDialog.Builder(this)
-//                .setTitle("确定要删除吗？")
-//                .setPositiveButton("确定", new DialogInterface.OnClickListener() {
-//                    @Override
-//                    public void onClick(DialogInterface dialog, int which) {
-        playfile.delete();
-        dbManager.delete(createName);
-
-        recordBeanList.remove(position);
-
-        notifyDataSetChanged();
-//                    }
-//                })
-//                .setNegativeButton("取消", null)
-//                .show();
-    }
-
-
-    private void closeAllOpenedSwipeView() {
-        for (int i = 0; i < unClosedSwipeView.size(); i++) {
-            if (unClosedSwipeView.get(i).getSwipeStatus() != SwipeView.SwipeStatus.Close) {
-                unClosedSwipeView.get(i).close();
-            }
-        }
-    }
-
-
 
 }

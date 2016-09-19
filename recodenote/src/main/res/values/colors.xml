@@ -16,4 +16,7 @@
 
     <color name="gray_total_bg">#e4e4e4</color>
     <color name="black">#000000</color>
+
+    <color name="red_normal">#FF0000</color>
+    <color name="red_pressed">#FF6666</color>
 </resources>

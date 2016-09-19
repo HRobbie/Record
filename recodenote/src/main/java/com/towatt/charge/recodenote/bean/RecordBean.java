@@ -24,13 +24,32 @@ public class RecordBean {
 
     private String storePosition;
 
-    private int whichFolder;
-
-    private String folderName;
+    private String whichFolder;
 
 
+    public RecordBean(int id, String name, long createDate, long duration, String createName, String storePosition, String whichFolder) {
+        this.id = id;
+        this.name = name;
+        this.createDate = createDate;
+        this.duration = duration;
+        this.createName = createName;
+        this.storePosition = storePosition;
+        this.whichFolder = whichFolder;
+    }
 
-    public RecordBean(int id, String name, long createDate, long duration, String createName, long clockTime, int isAlert, boolean isCheck, boolean isShake, String storePosition, int whichFolder, String folderName) {
+    public RecordBean(int id, String name, long createDate, long duration, String createName, long clockTime, int isAlert, String storePosition, String whichFolder) {
+        this.id = id;
+        this.name = name;
+        this.createDate = createDate;
+        this.duration = duration;
+        this.createName = createName;
+        this.clockTime = clockTime;
+        this.isAlert = isAlert;
+        this.storePosition = storePosition;
+        this.whichFolder = whichFolder;
+    }
+
+    public RecordBean(int id, String name, long createDate, long duration, String createName, long clockTime, int isAlert, boolean isCheck, boolean isShake, String storePosition, String whichFolder, String folderName) {
         this.id = id;
         this.name = name;
         this.createDate = createDate;
@@ -42,7 +61,6 @@ public class RecordBean {
         this.isShake = isShake;
         this.storePosition = storePosition;
         this.whichFolder = whichFolder;
-        this.folderName = folderName;
     }
 
     public RecordBean(int id, String name, long createDate, long duration, String createName, String storePosition) {
@@ -77,20 +95,26 @@ public class RecordBean {
         this.storePosition = storePosition;
     }
 
-    public int getWhichFolder() {
-        return whichFolder;
-    }
-
-    public void setWhichFolder(int whichFolder) {
+    public RecordBean(int id, String name, long createDate, long duration, String createName, long clockTime, int isAlert, boolean isCheck, boolean isShake, String storePosition, String whichFolder) {
+        this.id = id;
+        this.name = name;
+        this.createDate = createDate;
+        this.duration = duration;
+        this.createName = createName;
+        this.clockTime = clockTime;
+        this.isAlert = isAlert;
+        this.isCheck = isCheck;
+        this.isShake = isShake;
+        this.storePosition = storePosition;
         this.whichFolder = whichFolder;
     }
 
-    public String getFolderName() {
-        return folderName;
+    public String getWhichFolder() {
+        return whichFolder;
     }
 
-    public void setFolderName(String folderName) {
-        this.folderName = folderName;
+    public void setWhichFolder(String whichFolder) {
+        this.whichFolder = whichFolder;
     }
 
     public String getStorePosition() {

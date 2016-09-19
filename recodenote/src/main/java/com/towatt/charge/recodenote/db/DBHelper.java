@@ -24,8 +24,11 @@ public class DBHelper extends SQLiteOpenHelper {
      */
     @Override
     public void onCreate(SQLiteDatabase db) {
-        String sql = "create table record_note(_id integer primary key autoincrement,name varchar,createDate integer,duration integer,createName varchar,clockTime integer,isAlert integer,storePosition varchar,whichFolder integer,folderName varchar)";
+        String sql = "create table record_note(_id integer primary key autoincrement,name varchar,createDate integer,duration integer,createName varchar,clockTime integer,isAlert integer,storePosition varchar,whichFolder varchar)";
+        String sql1 = "create table record_folder(_id integer primary key autoincrement,whichFolder varchar,folderName varchar,createDate integer)";
+
         db.execSQL(sql);
+        db.execSQL(sql1);
 
     }
 

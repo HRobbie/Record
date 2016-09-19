@@ -5,6 +5,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
+import com.towatt.charge.recodenote.bean.FolderBean;
 import com.towatt.charge.recodenote.bean.RecordBean;
 
 import java.util.ArrayList;
@@ -30,8 +31,8 @@ public class DBManager {
      * @param recordBean
      */
     public void add(RecordBean recordBean) {
-        String sql = "insert into record_note (_id,name,createDate,duration,createName,storePosition) values(null, ?, ?,?,?,?)";
-        db.execSQL(sql, new Object[]{recordBean.getName(), recordBean.getCreateDate(),recordBean.getDuration(),recordBean.getCreateName(),recordBean.getStorePosition()});
+        String sql = "insert into record_note (_id,name,createDate,duration,createName,storePosition,whichFolder) values(null, ?, ?,?,?,?,?)";
+        db.execSQL(sql, new Object[]{recordBean.getName(), recordBean.getCreateDate(),recordBean.getDuration(),recordBean.getCreateName(),recordBean.getStorePosition(),recordBean.getWhichFolder()});
         Log.e("TAG", "dbmanager db add");
     }
 
@@ -97,9 +98,39 @@ public class DBManager {
             long clockTime = cursor.getLong(cursor.getColumnIndex("clockTime"));
             int isAlert = cursor.getInt(cursor.getColumnIndex("isAlert"));
             String storePosition = cursor.getString(cursor.getColumnIndex("storePosition"));
-            RecordBean note = new RecordBean(_id, name, createDate, duration, createName,clockTime,isAlert,storePosition);
+            String whichFolder1 = cursor.getString(cursor.getColumnIndex("whichFolder"));
+            RecordBean note = new RecordBean(_id, name, createDate, duration, createName,clockTime,isAlert,storePosition,whichFolder1);
+            list.add(note);
+        }
+        cursor.close();
+        return list;
+    }
+    /**
+     * 根据文件夹查询其中的录音
+     *
+     * @return
+     */
+    public List<RecordBean> queryAllRecord(String whichFolder) {
+        String strWhich=whichFolder+"";
+        Log.e("TAG", "dbManager strWhich="+strWhich);
+        String sql = "select * from record_note where whichFolder=? order by createDate desc";
+        Cursor cursor = db.rawQuery(sql, new String[]{strWhich});
+        List<RecordBean> list = new ArrayList<>();
+        while (cursor.moveToNext()) {
+            int _id = cursor.getInt(cursor.getColumnIndex("_id"));
+            String name = cursor.getString(cursor.getColumnIndex("name"));
+            long createDate = cursor.getLong(cursor.getColumnIndex("createDate"));
+            long duration = cursor.getLong(cursor.getColumnIndex("duration"));
+            String createName = cursor.getString(cursor.getColumnIndex("createName"));
+            long clockTime = cursor.getLong(cursor.getColumnIndex("clockTime"));
+            int isAlert = cursor.getInt(cursor.getColumnIndex("isAlert"));
+            String storePosition = cursor.getString(cursor.getColumnIndex("storePosition"));
+            String whichFolder1 = cursor.getString(cursor.getColumnIndex("whichFolder"));
+            RecordBean note = new RecordBean(_id, name, createDate, duration, createName,clockTime,isAlert,storePosition,whichFolder1);
 
             list.add(note);
+
+            Log.e("TAG", "dbmanager queryAllRecord");
         }
         cursor.close();
         return list;
@@ -123,7 +154,8 @@ public class DBManager {
                 String createName = cursor.getString(cursor.getColumnIndex("createName"));
                 int isAlert = cursor.getInt(cursor.getColumnIndex("isAlert"));
                 String storePosition = cursor.getString(cursor.getColumnIndex("storePosition"));
-                RecordBean note = new RecordBean(_id, name, createDate, duration, createName,clockTime,isAlert,storePosition);
+                String whichFolder1 = cursor.getString(cursor.getColumnIndex("whichFolder"));
+                RecordBean note = new RecordBean(_id, name, createDate, duration, createName,clockTime,isAlert,storePosition,whichFolder1);
                 list.add(note);
             }
         }
@@ -149,8 +181,8 @@ public class DBManager {
                 String createName = cursor.getString(cursor.getColumnIndex("createName"));
                 int isAlert = cursor.getInt(cursor.getColumnIndex("isAlert"));
                 String storePosition = cursor.getString(cursor.getColumnIndex("storePosition"));
-                RecordBean note = new RecordBean(_id, name, createDate, duration, createName,clockTime,isAlert,storePosition);
-
+                String whichFolder1 = cursor.getString(cursor.getColumnIndex("whichFolder"));
+                RecordBean note = new RecordBean(_id, name, createDate, duration, createName,clockTime,isAlert,storePosition,whichFolder1);
                 list.add(note);
             }
         }
@@ -175,8 +207,8 @@ public class DBManager {
             long clockTime = cursor.getLong(cursor.getColumnIndex("clockTime"));
             int isAlert = cursor.getInt(cursor.getColumnIndex("isAlert"));
             String storePosition = cursor.getString(cursor.getColumnIndex("storePosition"));
-            note = new RecordBean(_id, name, createDate, duration, createName,clockTime,isAlert,storePosition);
-
+            String whichFolder1 = cursor.getString(cursor.getColumnIndex("whichFolder"));
+            note = new RecordBean(_id, name, createDate, duration, createName,clockTime,isAlert,storePosition,whichFolder1);
         }
         cursor.close();
         return note;
@@ -188,5 +220,78 @@ public class DBManager {
             db.close();
         }
         Log.e("TAG", "数据库关了！！！");
+    }
+
+    /**
+     * 添加一条数据
+     *
+     * @param folderBean
+     */
+    public void addFolder(FolderBean folderBean) {
+        String sql = "insert into record_folder (_id,whichFolder,folderName,createDate) values(null, ?, ?,?)";
+        db.execSQL(sql, new Object[]{folderBean.getWhichFolder(),folderBean.getFolderName(),folderBean.getCreateDate()});
+        Log.e("TAG", "dbmanager db add");
+    }
+
+
+    /**
+     * 删除若干条数据
+     *
+     * @param whichFolder
+     */
+    public void deleteFolder(String whichFolder) {
+        String sql = "delete from record_folder where whichFolder = ?";
+        db.execSQL(sql, new Object[]{whichFolder});
+    }
+
+    /**
+     * 更新一条数据
+     *
+     * @param newName,createName
+     */
+    public void updateFolderName(String newName,String whichFolder) {
+        String sql = "update record_folder set folderName = ? where whichFolder = ?";
+        db.execSQL(sql, new Object[]{newName, whichFolder});
+    }
+
+
+    /**
+     * 查询所有
+     *
+     * @return
+     */
+    public List<FolderBean> queryFolderAll() {
+        String sql = "select * from record_folder order by _id desc";
+        Cursor cursor = db.rawQuery(sql, null);
+        List<FolderBean> list = new ArrayList<>();
+        while (cursor.moveToNext()) {
+            int _id = cursor.getInt(cursor.getColumnIndex("_id"));
+            String whichFolder = cursor.getString(cursor.getColumnIndex("whichFolder"));
+            String folderName = cursor.getString(cursor.getColumnIndex("folderName"));
+            long createDate = cursor.getLong(cursor.getColumnIndex("createDate"));
+            FolderBean note = new FolderBean(_id, whichFolder, folderName, createDate);
+
+            list.add(note);
+        }
+        cursor.close();
+        return list;
+    }
+    /**
+     * 查询所有
+     *
+     * @return
+     */
+    public FolderBean queryFolderByWhich(String whichFolder) {
+        String sql = "select * from record_folder where whichFolder=?";
+        Cursor cursor = db.rawQuery(sql, new String[]{whichFolder});
+        while (cursor.moveToNext()) {
+            int _id = cursor.getInt(cursor.getColumnIndex("_id"));
+            String folderName = cursor.getString(cursor.getColumnIndex("folderName"));
+            long createDate = cursor.getLong(cursor.getColumnIndex("createDate"));
+            FolderBean note = new FolderBean(_id, whichFolder, folderName, createDate);
+
+            return note;
+        }
+        return null;
     }
 }
