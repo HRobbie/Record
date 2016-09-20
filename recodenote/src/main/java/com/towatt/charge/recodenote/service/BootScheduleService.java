@@ -58,6 +58,7 @@ public class BootScheduleService extends Service {
         Log.e("TAG", "bootScheduleservice onstartCommend");
         dbManager = new DBManager(this);
         List<RecordBean> recordList = dbManager.queryAllClock();
+//        stopRemind();
         if(recordList.size()>=1) {
             sendBoardCase(recordList.get(0).getClockTime());
             for(int i=1;i<recordList.size();i++){
@@ -74,6 +75,8 @@ public class BootScheduleService extends Service {
                     handler.sendMessageDelayed(obtain,delay);
                 }
             }
+        }else{
+            stopRemind();
         }
 
         return START_STICKY;
@@ -100,5 +103,21 @@ public class BootScheduleService extends Service {
          * 第三个参数是重复周期，也就是下次提醒的间隔 毫秒值 我这里是一天后提醒
          */
 //        am.setRepeating(AlarmManager.RTC_WAKEUP, mCalendar.getTimeInMillis(), (1000 * 20  ), pi);
+    }
+
+
+    /**
+     * 关闭提醒
+     */
+    private void stopRemind(){
+
+        Intent intent = new Intent(this, AlarmReceiver.class);
+        PendingIntent pi = PendingIntent.getBroadcast(this, 0,
+                intent, 0);
+        AlarmManager am = (AlarmManager)getSystemService(ALARM_SERVICE);
+        //取消警报
+        am.cancel(pi);
+//        Toast.makeText(this, "关闭了提醒", Toast.LENGTH_SHORT).show();
+
     }
 }
