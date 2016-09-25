@@ -14,10 +14,8 @@ import android.util.Log;
 
 import com.towatt.charge.recodenote.FolderActivity;
 import com.towatt.charge.recodenote.R;
-import com.towatt.charge.recodenote.bean.FolderBean;
 import com.towatt.charge.recodenote.bean.RecordBean;
 import com.towatt.charge.recodenote.db.DBManager;
-import com.towatt.charge.recodenote.receiver.AlarmReceiver;
 
 import java.util.List;
 
@@ -28,7 +26,7 @@ import java.util.List;
  * 邮箱：hwwyouxiang@163.com
  * Description:Page Function.
  */
-public class BootScheduleService extends Service {
+public class BootScheduleServiceCopy extends Service {
 
     private DBManager dbManager;
     private final static int MESSAGE_SEND=0;
@@ -53,22 +51,21 @@ public class BootScheduleService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+//        Notification notification = new Notification();
+//        startForeground(200,notification);
         new Thread(){
             public void run(){
-                Intent intent = new Intent(BootScheduleService.this, FolderActivity.class);
-                PendingIntent pendingIntent=PendingIntent.getActivity(BootScheduleService.this, 200, intent, PendingIntent.FLAG_CANCEL_CURRENT);
-                Notification.Builder builder = new Notification.Builder(BootScheduleService.this);
+                Intent intent = new Intent(BootScheduleServiceCopy.this, FolderActivity.class);
+                PendingIntent pendingIntent=PendingIntent.getActivity(BootScheduleServiceCopy.this, 200, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+                Notification.Builder builder = new Notification.Builder(BootScheduleServiceCopy.this);
                 builder.setSmallIcon(R.mipmap.ic_launcher).setContentTitle("语音记事本")
-                        .setDefaults(Notification.DEFAULT_VIBRATE).setContentText("语音记事本在后台运行")
+                        .setDefaults(Notification.DEFAULT_LIGHTS).setContentText("语音记事本在后台运行")
                         .setTicker("语音记事本提醒").setOngoing(true).setAutoCancel(true).setContentIntent(pendingIntent);
                 Notification build = builder.build();
                 Notification notification = new Notification();
                 startForeground(200,build);
             }
         }.start();
-
-
-
 
     }
 
@@ -77,7 +74,7 @@ public class BootScheduleService extends Service {
         Log.e("TAG", "bootScheduleservice onstartCommend");
         new Thread(){
             public void run(){
-                dbManager = new DBManager(BootScheduleService.this);
+                dbManager = new DBManager(BootScheduleServiceCopy.this);
                 List<RecordBean> recordList = dbManager.queryAllClock();
 //        stopRemind();
                 if(recordList.size()>=1) {
@@ -99,9 +96,9 @@ public class BootScheduleService extends Service {
                 }else{
                     stopRemind();
                 }
+
             }
         }.start();
-
 
         return START_STICKY;
     }
@@ -152,7 +149,7 @@ public class BootScheduleService extends Service {
     @Override
     public void onDestroy() {
         stopForeground(true);
-        Intent intent = new Intent(BootScheduleService.this, BootScheduleServiceCopy.class);
+        Intent intent = new Intent(BootScheduleServiceCopy.this, BootScheduleService.class);
         startService(intent);
         super.onDestroy();
     }

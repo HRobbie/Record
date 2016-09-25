@@ -17,7 +17,11 @@
 package com.towatt.charge.recodenote.application;
 
 import android.app.Application;
+import android.content.Intent;
+import android.content.IntentFilter;
+
 import com.karumi.dexter.Dexter;
+import com.towatt.charge.recodenote.receiver.AutoBoot;
 
 /**
  * Sample application that initializes the Dexter library.
@@ -27,5 +31,18 @@ public class SampleApplication extends Application {
   @Override public void onCreate() {
     super.onCreate();
     Dexter.initialize(this);
+
+//    new Thread(){
+//        public void run(){
+//          IntentFilter filter = new IntentFilter(Intent.ACTION_TIME_TICK);
+//
+//          AutoBoot receiver = new AutoBoot();
+//          registerReceiver(receiver, filter);
+//        }
+//    }.start();
+    IntentFilter filter = new IntentFilter(Intent.ACTION_TIME_TICK);
+
+    AutoBoot receiver = new AutoBoot();
+    registerReceiver(receiver, filter);
   }
 }

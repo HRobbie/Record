@@ -44,6 +44,22 @@ public class NotificationService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+
+//        MediaPlayer mp = new MediaPlayer();
+//        try {
+//            mp.setDataSource(this, RingtoneManager
+//                    .getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
+//            mp.prepare();
+//
+//            mp.start();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
         //获取alarm uri
         Uri alert = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
 
@@ -62,22 +78,6 @@ public class NotificationService extends Service {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-
-//        MediaPlayer mp = new MediaPlayer();
-//        try {
-//            mp.setDataSource(this, RingtoneManager
-//                    .getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
-//            mp.prepare();
-//
-//            mp.start();
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-
         if(!mMediaPlayer.isPlaying()){
             mMediaPlayer.start();
         }
@@ -133,7 +133,7 @@ public class NotificationService extends Service {
 
                     Notification.Builder builder = new Notification.Builder(NotificationService.this);
                     builder.setSmallIcon(R.drawable.advise2).setContentTitle("通知").setWhen(System.currentTimeMillis())
-                            .setDefaults(Notification.DEFAULT_VIBRATE).setContentIntent(pendingIntent).setContentText(recordBean.getName()+"要收听了")
+                            .setDefaults(Notification.DEFAULT_ALL).setContentIntent(pendingIntent).setContentText(recordBean.getName()+"要收听了")
                             .setTicker("语音记事本提醒").setOngoing(true).setAutoCancel(true);
                     Notification build = builder.build();
 
