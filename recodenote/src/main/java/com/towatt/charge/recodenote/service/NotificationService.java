@@ -60,37 +60,9 @@ public class NotificationService extends Service {
 //        } catch (Exception e) {
 //            e.printStackTrace();
 //        }
-        //获取alarm uri
-        Uri alert = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
-
-//创建media player
-        mMediaPlayer = new MediaPlayer();
         dbManager = new DBManager(this);
-        try {
-            mMediaPlayer.setDataSource(this, alert);
-            final AudioManager audioManager = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
-            if (audioManager.getStreamVolume(AudioManager.STREAM_ALARM) != 0) {
-                mMediaPlayer.setAudioStreamType(AudioManager.STREAM_ALARM);
-                mMediaPlayer.setLooping(true);
-                mMediaPlayer.prepare();
-
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        if(!mMediaPlayer.isPlaying()){
-            mMediaPlayer.start();
-        }
-        new Thread(){
-            public void run(){
-                SystemClock.sleep(60000);
-                if(mMediaPlayer!=null){
-                    mMediaPlayer.stop();
-                }
-
-            }
-        }.start();
-
+    //创建media player
+        mMediaPlayer = new MediaPlayer();
 
 
         findReordList(startId);
@@ -99,11 +71,48 @@ public class NotificationService extends Service {
         return START_NOT_STICKY;
     }
 
+    private void playMusic() {
+        new Thread(){
+            public void run(){
+                //获取alarm uri
+                Uri alert = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
+                try {
+                    mMediaPlayer.setDataSource(NotificationService.this, alert);
+                    final AudioManager audioManager = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
+                    if (audioManager.getStreamVolume(AudioManager.STREAM_ALARM) != 0) {
+                        mMediaPlayer.setAudioStreamType(AudioManager.STREAM_ALARM);
+                        mMediaPlayer.setLooping(true);
+                        mMediaPlayer.prepare();
+
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                if(!mMediaPlayer.isPlaying()){
+                    mMediaPlayer.start();
+                }
+                new Thread(){
+                    public void run(){
+                        SystemClock.sleep(60000);
+                        if(mMediaPlayer!=null){
+                            mMediaPlayer.stop();
+                        }
+
+                    }
+                }.start();
+            }
+        }.start();
+    }
+
     private void findReordList(final int startId) {
         new Thread(){
             public void run(){
                 recordList = dbManager.queryAllClock1();
+                if(recordList.size()>=1){
+                    playMusic();
+                }
                 for(int i = 0; i< recordList.size(); i++){
+
                     Log.e("TAG", "Notificationservice nstartCommand");
                     RecordBean recordBean = recordList.get(i);
                     FolderBean folderBean = dbManager.queryFolderByWhich(recordBean.getWhichFolder());
@@ -149,6 +158,8 @@ public class NotificationService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        mMediaPlayer.release();
+        if(mMediaPlayer!=null){
+            mMediaPlayer.release();
+        }
     }
 }

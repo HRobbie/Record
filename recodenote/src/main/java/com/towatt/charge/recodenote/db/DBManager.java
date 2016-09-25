@@ -173,7 +173,7 @@ public class DBManager {
         List<RecordBean> list = new ArrayList<>();
         while (cursor.moveToNext()) {
             long clockTime = cursor.getLong(cursor.getColumnIndex("clockTime"));
-            if(clockTime>System.currentTimeMillis()-60000&&clockTime<=System.currentTimeMillis()){
+            if(clockTime>System.currentTimeMillis()-40000&&clockTime<=System.currentTimeMillis()){
                 int _id = cursor.getInt(cursor.getColumnIndex("_id"));
                 String name = cursor.getString(cursor.getColumnIndex("name"));
                 long createDate = cursor.getLong(cursor.getColumnIndex("createDate"));

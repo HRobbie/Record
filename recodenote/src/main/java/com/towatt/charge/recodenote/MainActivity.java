@@ -149,7 +149,7 @@ public class  MainActivity extends AppCompatActivity implements View.OnClickList
         whichFolder = intent.getStringExtra("whichFolder");
 
         Log.e("TAG", "MainActivity whichFolder="+whichFolder);
-        startRemind();
+//        startRemind();
 
         stopNotificationMusic();
 
@@ -1168,11 +1168,11 @@ public class  MainActivity extends AppCompatActivity implements View.OnClickList
         public void onItemClick(Closeable closeable, int adapterPosition, int menuPosition, int direction) {
             closeable.smoothCloseMenu();// 关闭被点击的菜单。
 
-            if (direction == SwipeMenuRecyclerView.RIGHT_DIRECTION) {
-                Toast.makeText(mContext, "list第" + adapterPosition + "; 右侧菜单第" + menuPosition, Toast.LENGTH_SHORT).show();
-            } else if (direction == SwipeMenuRecyclerView.LEFT_DIRECTION) {
-                Toast.makeText(mContext, "list第" + adapterPosition + "; 左侧菜单第" + menuPosition, Toast.LENGTH_SHORT).show();
-            }
+//            if (direction == SwipeMenuRecyclerView.RIGHT_DIRECTION) {
+//                Toast.makeText(mContext, "list第" + adapterPosition + "; 右侧菜单第" + menuPosition, Toast.LENGTH_SHORT).show();
+//            } else if (direction == SwipeMenuRecyclerView.LEFT_DIRECTION) {
+//                Toast.makeText(mContext, "list第" + adapterPosition + "; 左侧菜单第" + menuPosition, Toast.LENGTH_SHORT).show();
+//            }
 
             // TODO 如果是删除：推荐调用Adapter.notifyItemRemoved(position)，不推荐Adapter.notifyDataSetChanged();
             if (menuPosition == 0) {// 删除按钮被点击。
