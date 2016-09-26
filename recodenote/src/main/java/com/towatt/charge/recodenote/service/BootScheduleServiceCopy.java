@@ -36,7 +36,7 @@ public class BootScheduleServiceCopy extends Service {
                 case MESSAGE_SEND:
                     long clockTime = msg.getData().getLong("clockTime");
                     sendBoardCase(clockTime);
-                break;
+                    break;
 
             }
         }
@@ -51,27 +51,29 @@ public class BootScheduleServiceCopy extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-//        Notification notification = new Notification();
-//        startForeground(200,notification);
         new Thread(){
             public void run(){
-                Intent intent = new Intent(BootScheduleServiceCopy.this, FolderActivity.class);
-                PendingIntent pendingIntent=PendingIntent.getActivity(BootScheduleServiceCopy.this, 200, intent, PendingIntent.FLAG_CANCEL_CURRENT);
-                Notification.Builder builder = new Notification.Builder(BootScheduleServiceCopy.this);
-                builder.setSmallIcon(R.mipmap.ic_launcher).setContentTitle("语音记事本")
-                        .setDefaults(Notification.DEFAULT_LIGHTS).setContentText("语音记事本在后台运行")
-                        .setTicker("语音记事本提醒").setOngoing(true).setAutoCancel(true).setContentIntent(pendingIntent);
-                Notification build = builder.build();
+//                Intent intent = new Intent(BootScheduleService.this, FolderActivity.class);
+//                PendingIntent pendingIntent=PendingIntent.getActivity(BootScheduleService.this, 200, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+//                Notification.Builder builder = new Notification.Builder(BootScheduleService.this);
+//                builder.setSmallIcon(R.mipmap.ic_launcher).setContentTitle("语音记事本")
+//                        .setDefaults(Notification.DEFAULT_VIBRATE).setContentText("语音记事本在后台运行")
+//                        .setTicker("语音记事本提醒").setOngoing(true).setAutoCancel(true).setContentIntent(pendingIntent);
+//                Notification build = builder.build();
                 Notification notification = new Notification();
-                startForeground(200,build);
+                startForeground(200,notification);
             }
         }.start();
+
+
+
 
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.e("TAG", "bootScheduleservice onstartCommend");
+//        dbManager = new DBManager(BootScheduleService.this);
         new Thread(){
             public void run(){
                 dbManager = new DBManager(BootScheduleServiceCopy.this);
@@ -96,12 +98,24 @@ public class BootScheduleServiceCopy extends Service {
                 }else{
                     stopRemind();
                 }
-
             }
         }.start();
 
+
+//        notifyOldClock();
         return START_STICKY;
     }
+
+//    private void notifyOldClock() {
+//        new Thread(){
+//            public void run(){
+//                List<RecordBean> recordBeen = dbManager.queryOldClock1();
+//                for(int i=0;i<recordBeen.size();i++){
+//
+//                }
+//            }
+//        }.start();
+//    }
 
     private void sendBoardCase(long time) {
         Intent intent1 = new Intent(this, NotificationService.class);

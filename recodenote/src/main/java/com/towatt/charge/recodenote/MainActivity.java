@@ -750,6 +750,7 @@ public class  MainActivity extends AppCompatActivity implements View.OnClickList
 //            lv_record.setSelection(position);
 
                     if(position!=-1){
+//                        dbManager.updateIsAlert(createName,0);
                         mMusicList.get(position).setShake(true);
                         final int finalPosition = position;
                         runOnUiThread(new Runnable() {
@@ -897,7 +898,7 @@ public class  MainActivity extends AppCompatActivity implements View.OnClickList
                 }
                 if(position!=-1){
                     mMusicList.get(position).setShake(true);
-
+//                    dbManager.updateIsAlert(createName,0);
                     final int finalPosition = position;
                     runOnUiThread(new Runnable() {
                         @Override

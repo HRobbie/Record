@@ -1,6 +1,8 @@
 package com.towatt.charge.recodenote;
 
+import android.app.ActivityManager;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.media.MediaRecorder;
@@ -35,6 +37,7 @@ import com.towatt.charge.recodenote.bean.FolderBean;
 import com.towatt.charge.recodenote.bean.RecordBean;
 import com.towatt.charge.recodenote.db.DBManager;
 import com.towatt.charge.recodenote.service.BootScheduleService;
+import com.towatt.charge.recodenote.service.NotificationService;
 import com.towatt.charge.recodenote.utils.CommentUtils;
 
 import java.io.File;
@@ -562,8 +565,37 @@ public class FolderActivity extends AppCompatActivity implements View.OnClickLis
      * 开启提醒
      */
     private void startRemind(){
-        Intent intent = new Intent(this, BootScheduleService.class);
-        startService(intent);
+        new Thread(){
+            public void run(){
+                boolean isServiceRunning = false;
+
+                    //检查Service状态
+
+                    ActivityManager manager = (ActivityManager) FolderActivity.this.getSystemService(Context.ACTIVITY_SERVICE);
+                    for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+                        if ("com.towatt.charge.recodenote.service.BootScheduleService".equals(service.service.getClassName()))
+
+                        {
+                            Log.e("TAG", "AutoBoot BootScheduleServiceService");
+                            isServiceRunning = true;
+                        }
+
+                    }
+                    if (!isServiceRunning) {
+                        Intent i = new Intent(FolderActivity.this, BootScheduleService.class);
+                        FolderActivity.this.startService(i);
+                    }
+                }
+
+        }.start();
+
+        new Thread(){
+            public void run(){
+                Intent intent1 = new Intent(FolderActivity.this, NotificationService.class);
+                startService(intent1);
+            }
+        }.start();
+
     }
 
 

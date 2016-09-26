@@ -109,7 +109,7 @@ public class MenuAdapter extends SwipeMenuAdapter{
         recordHolder.id_time.setText(CommentUtils.longToHMS(recordBean.getDuration())+ "\"");
         long clockTime = recordBean.getClockTime();
         if(clockTime!=0){
-            if(clockTime>System.currentTimeMillis()&&recordBean.getIsAlert()!=0){
+            if(recordBean.getIsAlert()!=0){
                 recordHolder.tv_clock_time.setTextColor(mContext.getResources().getColor(R.color.red));
             }else{
                 recordHolder.tv_clock_time.setTextColor(mContext.getResources().getColor(R.color.gray));

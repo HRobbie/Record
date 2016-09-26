@@ -51,6 +51,6 @@ public class AutoBoot extends BroadcastReceiver {
 
 
 
-        Toast.makeText(context,"自启动",Toast.LENGTH_LONG).show();
+//        Toast.makeText(context,"自启动",Toast.LENGTH_LONG).show();
     }
 }
