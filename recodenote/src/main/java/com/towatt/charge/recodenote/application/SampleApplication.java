@@ -44,5 +44,10 @@ public class SampleApplication extends Application {
 
     AutoBoot receiver = new AutoBoot();
     registerReceiver(receiver, filter);
+
+    //注册亮屏广播
+    IntentFilter filter1 = new IntentFilter();
+    filter1.addAction(Intent.ACTION_SCREEN_ON);
+    registerReceiver(receiver, filter1);
   }
 }

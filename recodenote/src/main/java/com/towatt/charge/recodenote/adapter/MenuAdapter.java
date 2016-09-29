@@ -32,7 +32,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.towatt.charge.recodenote.ClockActivity;
+import com.towatt.charge.recodenote.ClockActivity1;
 import com.towatt.charge.recodenote.R;
 import com.towatt.charge.recodenote.bean.FolderBean;
 import com.towatt.charge.recodenote.bean.RecordBean;
@@ -213,7 +213,7 @@ public class MenuAdapter extends SwipeMenuAdapter{
                     }
                 }else{
 
-                        Intent intent = new Intent(mContext, ClockActivity.class);
+                        Intent intent = new Intent(mContext, ClockActivity1.class);
                         intent.putExtra("createName",recordBeanList.get(finalPosition).getCreateName());
                         FolderBean folderBean = dbManager.queryFolderByWhich(recordBeanList.get(finalPosition).getWhichFolder());
                         intent.putExtra("folderName",folderBean.getFolderName());

@@ -40,6 +40,9 @@
         <activity
             android:name=".ClockActivity"
             android:screenOrientation="portrait" />
+        <activity
+            android:name=".ClockActivity1"
+            android:screenOrientation="portrait" />
 
         <receiver
             android:name=".receiver.BootAlarm"

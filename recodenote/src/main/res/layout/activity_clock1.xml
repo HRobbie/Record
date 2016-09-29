@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:orientation="vertical"
+    android:layout_height="match_parent"
+    xmlns:card="http://schemas.android.com/apk/res-auto"
+    tools:context="com.towatt.charge.recodenote.ClockActivity">
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="?attr/colorAccent"
+        >
+    </android.support.v7.widget.Toolbar>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_weight="1"
+        android:layout_marginTop="10dp"
+        >
+        <android.support.v7.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="240dp"
+            card:cardCornerRadius="5dp"
+            card:cardElevation="5dp"
+            card:cardPreventCornerOverlap="true"
+            card:cardUseCompatPadding="true"
+            card:cardMaxElevation="5dp"
+            >
+
+            <include layout="@layout/item_clock_time" />
+
+        </android.support.v7.widget.CardView>
+
+
+
+    </LinearLayout>
+
+    <!--<Button-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:text="保存提醒"-->
+        <!--android:onClick="save"-->
+        <!--android:background="@color/colorAccent"-->
+        <!--android:textColor="@color/white"-->
+
+        <!--/>-->
+</LinearLayout>
