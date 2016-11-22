@@ -517,7 +517,7 @@ public class  MainActivity extends AppCompatActivity implements View.OnClickList
                     public void onClick(DialogInterface dialog, int which) {
                         String name = editText.getText().toString().trim();
                         if (!name.isEmpty()) {
-                            long duration=sumRange-470;
+                            long duration=sumRange-450;
 //                            MediaPlayer mp = MediaPlayer.create(MainActivity.this, Uri.parse(mRecAudioFile.getAbsolutePath()));
 //                            try {
 //                                mp.prepare();
@@ -548,6 +548,8 @@ public class  MainActivity extends AppCompatActivity implements View.OnClickList
                                 updateListData();
 //                                dialog.dismiss();
                                 noCloseDialog(dialog,true);
+
+//                                inRecording=false;
                             }
                         } else {
                             CommentUtils.showToast(MainActivity.this,"名字不能为空！");
@@ -561,6 +563,7 @@ public class  MainActivity extends AppCompatActivity implements View.OnClickList
                         mRecAudioFile.delete();
 //                        dialog.dismiss();
                         noCloseDialog(dialog,true);
+//                        inRecording=false;
                     }
                 })
                 .show();
@@ -826,8 +829,19 @@ public class  MainActivity extends AppCompatActivity implements View.OnClickList
 
     @Override
     public void onBackPressed() {
-        super.onBackPressed();
-        backFolderActivity();
+//        super.onBackPressed();
+
+        if(inRecording){
+            inRecording=false;
+//                    list.add(mRecAudioFile.getAbsolutePath());
+            fab_play.setImageResource(R.drawable.white_record);
+            endRecord();
+//                    stopRecord();
+            lv_record.setEnabled(true);
+            rl_record.setVisibility(View.GONE);
+        }else{
+            backFolderActivity();
+        }
     }
 
     private void backFolderActivity() {
@@ -1196,4 +1210,5 @@ public class  MainActivity extends AppCompatActivity implements View.OnClickList
             }
         }
     };
+
 }

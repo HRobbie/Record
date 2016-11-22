@@ -8,6 +8,6 @@
     <dimen name="delete_view_width">150dp</dimen>
 
     <dimen name="item_height">95dp</dimen>
-    <dimen name="item_width">150dp</dimen>
+    <dimen name="item_width">140dp</dimen>
     <dimen name="item_margin">150dp</dimen>
 </resources>

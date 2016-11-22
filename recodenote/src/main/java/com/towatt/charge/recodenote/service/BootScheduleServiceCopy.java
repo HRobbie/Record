@@ -1,7 +1,6 @@
 package com.towatt.charge.recodenote.service;
 
 import android.app.AlarmManager;
-import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
@@ -12,8 +11,6 @@ import android.os.Message;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
-import com.towatt.charge.recodenote.FolderActivity;
-import com.towatt.charge.recodenote.R;
 import com.towatt.charge.recodenote.bean.RecordBean;
 import com.towatt.charge.recodenote.db.DBManager;
 
@@ -51,8 +48,8 @@ public class BootScheduleServiceCopy extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        new Thread(){
-            public void run(){
+//        new Thread(){
+//            public void run(){
 //                Intent intent = new Intent(BootScheduleService.this, FolderActivity.class);
 //                PendingIntent pendingIntent=PendingIntent.getActivity(BootScheduleService.this, 200, intent, PendingIntent.FLAG_CANCEL_CURRENT);
 //                Notification.Builder builder = new Notification.Builder(BootScheduleService.this);
@@ -60,10 +57,10 @@ public class BootScheduleServiceCopy extends Service {
 //                        .setDefaults(Notification.DEFAULT_VIBRATE).setContentText("语音记事本在后台运行")
 //                        .setTicker("语音记事本提醒").setOngoing(true).setAutoCancel(true).setContentIntent(pendingIntent);
 //                Notification build = builder.build();
-                Notification notification = new Notification();
-                startForeground(200,notification);
-            }
-        }.start();
+//                Notification notification = new Notification();
+//                startForeground(200,notification);
+//            }
+//        }.start();
 
 
 

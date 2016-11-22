@@ -378,6 +378,8 @@ public class FolderActivity extends AppCompatActivity implements View.OnClickLis
                             if (mRecAudioFile != null) {
                                 noCloseDialog(dialog,true);
                                 updateListData();
+
+//                                inRecording=false;
 //                                createFolder(timeMillis);
                             }
                         } else {
@@ -393,6 +395,7 @@ public class FolderActivity extends AppCompatActivity implements View.OnClickLis
                     public void onClick(DialogInterface dialog, int which) {
                         mRecAudioFile.delete();
                         noCloseDialog(dialog,true);
+//                        inRecording=false;
 //                        folderCount--;
                     }
                 })
@@ -686,8 +689,36 @@ public class FolderActivity extends AppCompatActivity implements View.OnClickLis
         }
         return super.onContextItemSelected(item);
     }
+    private long curMillios = 0;
+    private boolean showExitToast(){
+        long time = System.currentTimeMillis();
+        if (time - curMillios < 2000){
+            return true;
+        }
 
+        curMillios = time;
+        return false;
+    }
 
+    @Override
+    public void onBackPressed() {
+//        super.onBackPressed();
 
+        if(inRecording){
+            inRecording=false;
+//                    list.add(mRecAudioFile.getAbsolutePath());
+            fab_play.setImageResource(R.drawable.white_record);
+            endRecord();
+//                    stopRecord();
+            lv_record.setEnabled(true);
+        }else{
+            if(showExitToast()){
+
+                finish();
+            }else{
+                CommentUtils.showToast(this,"再按一次退出！");
+            }
+        }
+    }
 
 }

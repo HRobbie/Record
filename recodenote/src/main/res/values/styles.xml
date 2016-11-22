@@ -25,7 +25,7 @@
     </style>
 
 
-    <style name="MyDialogStyleBottom" parent="android:Theme.Dialog">
+    <style name="MyDialogStyleBottom" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="android:windowFrame">@null</item>
         <!-- 边框 -->
         <item name="android:windowIsFloating">true</item>
