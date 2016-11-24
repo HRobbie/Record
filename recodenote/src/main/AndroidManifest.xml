@@ -5,12 +5,10 @@
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
-    
     <!-- 添加操作振动器的权限 -->
     <uses-permission android:name="android.permission.VIBRATE" />
-    
 
     <application
         android:name=".application.SampleApplication"
@@ -18,19 +16,14 @@
         android:hardwareAccelerated="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:supportsRtl="true"
-        android:theme="@style/AppTheme"
         android:persistent="true"
-        >
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
         <activity
             android:name=".FolderActivity"
             android:launchMode="singleTask"
             android:screenOrientation="portrait">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
         </activity>
 
         <receiver
@@ -47,18 +40,14 @@
         <receiver
             android:name=".receiver.BootAlarm"
             android:process=":remote">
-            <intent-filter
-                android:priority="1000"
-                >
+            <intent-filter android:priority="1000">
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
         <receiver
             android:name=".receiver.AutoBoot"
             android:process=":remote">
-            <intent-filter
-                android:priority="1000"
-                >
+            <intent-filter android:priority="1000">
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
@@ -66,13 +55,11 @@
         <service
             android:name=".service.BootScheduleService"
             android:enabled="true"
-            android:exported="true"
-            />
+            android:exported="true"></service>
         <service
             android:name=".service.BootScheduleServiceCopy"
             android:enabled="true"
-            android:exported="true"
-            />
+            android:exported="true" />
         <service
             android:name=".service.NotificationService"
             android:enabled="true"
@@ -83,10 +70,26 @@
             android:name=".PlayActivity"
             android:screenOrientation="portrait"
             android:theme="@style/MyDialogStyleBottom" />
-        <activity android:name=".MainActivity"
+        <activity
+            android:name=".MainActivity"
             android:launchMode="singleTask"
+            android:screenOrientation="portrait" />
+        <activity android:name=".activity.SplashActivity"
             android:screenOrientation="portrait"
-            ></activity>
+            >
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <receiver android:name=".receiver.KeepLiveReceiver">
+            <intent-filter>
+                <action android:name="com.action.keepLive" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

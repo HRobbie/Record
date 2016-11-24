@@ -63,7 +63,7 @@ public class BootScheduleService extends Service {
 //        }.start();
 
 
-
+//        notifyOA();
 
     }
 
@@ -97,6 +97,7 @@ public class BootScheduleService extends Service {
                 }
             }
         }.start();
+
 
 
 //        notifyOldClock();
@@ -162,6 +163,47 @@ public class BootScheduleService extends Service {
         stopForeground(true);
         Intent intent = new Intent(BootScheduleService.this, BootScheduleServiceCopy.class);
         startService(intent);
+//        openOtherService();
         super.onDestroy();
     }
+
+    private void notifyOA(){
+        Log.e("TAG", "ReocrdNote");
+//        Intent intent = new Intent(Intent.ACTION_VIEW);
+
+//        intent.setClassName("com.mossle.android", "com.mossle.android.service.NotificationService");
+//        startService(intent);
+
+    }
+    private Intent intent;
+//    private void openOtherService(){
+//        new Thread(){
+//            public void run(){
+//                boolean isServiceRunning = false;
+//
+//                Log.e("TAG", "isServiceRunning");
+//
+//                if (intent.getAction().equals(Intent.ACTION_TIME_TICK)||Intent.ACTION_SCREEN_ON.equals(intent.getAction())) {
+//
+//                    //检查Service状态
+//
+//                    ActivityManager manager = (ActivityManager)getSystemService(Context.ACTIVITY_SERVICE);
+//                    for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+//                        if ("com.towatt.charge.recodenote.service.BootScheduleServiceCopy".equals(service.service.getClassName()))
+//
+//                        {
+//                            Log.e("TAG", "AutoBoot BootScheduleServiceService");
+//                            isServiceRunning = true;
+//                        }
+//
+//                    }
+//                    if (!isServiceRunning) {
+//                        Intent i = new Intent(BootScheduleService.this, BootScheduleService.class);
+//                        startService(i);
+//                    }
+//                }
+//
+//            }
+//        }.start();
+//    }
 }

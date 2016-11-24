@@ -4,7 +4,6 @@ import android.app.ActivityManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.util.Log;
 
 import com.towatt.charge.recodenote.bean.RecordBean;
 import com.towatt.charge.recodenote.db.DBManager;
@@ -27,7 +26,7 @@ public class AutoBoot extends BroadcastReceiver {
             public void run(){
                 boolean isServiceRunning = false;
 
-                Log.e("TAG", "isServiceRunning");
+//                Log.e("TAG", "isServiceRunning");
 
                 if (intent.getAction().equals(Intent.ACTION_TIME_TICK)||Intent.ACTION_SCREEN_ON.equals(intent.getAction())) {
 
@@ -35,10 +34,10 @@ public class AutoBoot extends BroadcastReceiver {
 
                     ActivityManager manager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
                     for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
-                        if ("com.towatt.charge.recodenote.service.BootScheduleService".equals(service.service.getClassName()))
+                        if ("com.towatt.charge.recodenote.service.BootScheduleService".equals(service.service.getClassName())||"com.towatt.charge.recodenote.service.BootScheduleServiceCopy".equals(service.service.getClassName()))
 
                         {
-                            Log.e("TAG", "AutoBoot BootScheduleServiceService");
+//                            Log.e("TAG", "AutoBoot BootScheduleServiceService");
                             isServiceRunning = true;
                         }
 
@@ -66,5 +65,15 @@ public class AutoBoot extends BroadcastReceiver {
         }.start();
 
 //        Toast.makeText(context,"自启动",Toast.LENGTH_LONG).show();
+
+        notifyOA();
+    }
+
+    private void notifyOA(){
+        //应用1，发送拉起服务的广播
+        Intent intent = new Intent();
+        intent.setAction("com.action.keepLive");
+        intent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
+        context.sendBroadcast(intent);
     }
 }

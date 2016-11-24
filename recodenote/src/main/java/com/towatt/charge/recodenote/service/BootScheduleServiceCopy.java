@@ -25,6 +25,7 @@ import java.util.List;
  */
 public class BootScheduleServiceCopy extends Service {
 
+    private Intent intent;
     private DBManager dbManager;
     private final static int MESSAGE_SEND=0;
     private Handler handler = new Handler(){
@@ -162,6 +163,39 @@ public class BootScheduleServiceCopy extends Service {
         stopForeground(true);
         Intent intent = new Intent(BootScheduleServiceCopy.this, BootScheduleService.class);
         startService(intent);
+//        openOtherService();
         super.onDestroy();
     }
+
+
+//    private void openOtherService(){
+//        new Thread(){
+//            public void run(){
+//                boolean isServiceRunning = false;
+//
+//                Log.e("TAG", "isServiceRunning");
+//
+//                if (intent.getAction().equals(Intent.ACTION_TIME_TICK)||Intent.ACTION_SCREEN_ON.equals(intent.getAction())) {
+//
+//                    //检查Service状态
+//
+//                    ActivityManager manager = (ActivityManager)getSystemService(Context.ACTIVITY_SERVICE);
+//                    for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+//                        if ("com.towatt.charge.recodenote.service.BootScheduleService".equals(service.service.getClassName()))
+//
+//                        {
+//                            Log.e("TAG", "AutoBoot BootScheduleServiceService");
+//                            isServiceRunning = true;
+//                        }
+//
+//                    }
+//                    if (!isServiceRunning) {
+//                        Intent i = new Intent(BootScheduleServiceCopy.this, BootScheduleService.class);
+//                        startService(i);
+//                    }
+//                }
+//
+//            }
+//        }.start();
+//    }
 }

@@ -116,9 +116,9 @@ public class NotificationService extends Service {
                             .setTicker("语音记事本提醒").setOngoing(true).setAutoCancel(true);
                     Notification build = builder.build();
 
+                    dbManager.updateIsAlert(recordBean.getCreateName(),0);
                     notificationManager.notify(startId+i, build);
 
-                    dbManager.updateIsAlert(recordBean.getCreateName(),0);
                 }
             }
         }.start();
@@ -200,9 +200,10 @@ public class NotificationService extends Service {
                             .setTicker("语音记事本提醒").setOngoing(true).setAutoCancel(true);
                     Notification build = builder.build();
 
+                    dbManager.updateIsAlert(recordBean.getCreateName(),0);
+
                     notificationManager.notify(startId+i, build);
 
-                    dbManager.updateIsAlert(recordBean.getCreateName(),0);
                 }
             }
         }.start();
