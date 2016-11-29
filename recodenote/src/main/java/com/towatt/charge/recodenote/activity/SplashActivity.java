@@ -1,5 +1,6 @@
 package com.towatt.charge.recodenote.activity;
 
+import android.Manifest;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -8,6 +9,12 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.ImageView;
 
+import com.karumi.dexter.Dexter;
+import com.karumi.dexter.PermissionToken;
+import com.karumi.dexter.listener.PermissionDeniedResponse;
+import com.karumi.dexter.listener.PermissionGrantedResponse;
+import com.karumi.dexter.listener.PermissionRequest;
+import com.karumi.dexter.listener.single.PermissionListener;
 import com.towatt.charge.recodenote.FolderActivity;
 import com.towatt.charge.recodenote.R;
 
@@ -21,6 +28,7 @@ public class SplashActivity extends AppCompatActivity implements View.OnClickLis
                 case MESSAGE_DELAY:
                     Intent intent = new Intent(SplashActivity.this, FolderActivity.class);
                     startActivity(intent);
+                    finish();
                     break;
             }
         }
@@ -31,7 +39,9 @@ public class SplashActivity extends AppCompatActivity implements View.OnClickLis
         setContentView(R.layout.activity_splash);
 
         initView();
-        handler.sendEmptyMessageDelayed(MESSAGE_DELAY,1000);
+
+        checkInternetPermission();
+
     }
 
     private void initView() {
@@ -52,4 +62,23 @@ public class SplashActivity extends AppCompatActivity implements View.OnClickLis
     }
 
 
+    private void checkInternetPermission() {
+
+        Dexter.checkPermission(new PermissionListener() {
+            @Override
+            public void onPermissionGranted(PermissionGrantedResponse response) {
+                handler.sendEmptyMessageDelayed(MESSAGE_DELAY,1000);
+            }
+
+            @Override
+            public void onPermissionDenied(PermissionDeniedResponse response) {
+                finish();
+            }
+
+            @Override
+            public void onPermissionRationaleShouldBeShown(PermissionRequest permission, PermissionToken token) {
+                token.continuePermissionRequest();
+            }
+        }, Manifest.permission.INTERNET);
+    }
 }

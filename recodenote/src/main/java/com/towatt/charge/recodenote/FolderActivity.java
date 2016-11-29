@@ -32,19 +32,26 @@ import com.karumi.dexter.listener.PermissionGrantedResponse;
 import com.karumi.dexter.listener.PermissionRequest;
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener;
 import com.karumi.dexter.listener.single.PermissionListener;
+import com.towatt.charge.recodenote.activity.DownloadDialogActivity;
 import com.towatt.charge.recodenote.adapter.FolderAdapter;
 import com.towatt.charge.recodenote.bean.FolderBean;
 import com.towatt.charge.recodenote.bean.RecordBean;
+import com.towatt.charge.recodenote.bean.UpdateInfoBean;
 import com.towatt.charge.recodenote.db.DBManager;
+import com.towatt.charge.recodenote.interface1.MyCallBack;
 import com.towatt.charge.recodenote.service.BootScheduleService;
 import com.towatt.charge.recodenote.service.NotificationService;
+import com.towatt.charge.recodenote.utils.CacheUtils;
 import com.towatt.charge.recodenote.utils.CommentUtils;
+import com.towatt.charge.recodenote.utils.NetUrl;
 
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class FolderActivity extends AppCompatActivity implements View.OnClickListener{
 
@@ -87,7 +94,10 @@ public class FolderActivity extends AppCompatActivity implements View.OnClickLis
 
         initData();
 
-
+        /**
+         * 检查更新
+         */
+        getUpdateInfo();
     }
 
     private void initData() {
@@ -720,5 +730,56 @@ public class FolderActivity extends AppCompatActivity implements View.OnClickLis
             }
         }
     }
+
+    /**
+     * 联网获取更新数据
+     */
+    private void getUpdateInfo(){
+        Log.e("TAG", "FolderActivity getUpdateInfo");
+        Map<String,String> map=new HashMap<>();
+        map.put("flag","3");
+        CommentUtils.Get(NetUrl.updateUrl,map,new MyCallBack<String>(){
+            @Override
+            public void onSuccess(String result) {
+                Log.e("TAG", "FolderActiviity result="+result);
+                if(result.contains("data")){
+                    CacheUtils.getInstance(FolderActivity.this).putValue(NetUrl.updateUrl,result);
+                    parseUpdateData(result);
+                }
+            }
+
+
+
+
+            @Override
+            public void onError(Throwable ex, boolean isOnCallback) {
+                Log.e("TAG", "onError");
+            }
+        });
+    }
+
+    /**
+     * 解析更新数据
+     * @param result
+     */
+    private void parseUpdateData(String result) {
+        UpdateInfoBean updateInfoBean = CommentUtils.getGson().fromJson(result, UpdateInfoBean.class);
+        UpdateInfoBean.DataBean data = updateInfoBean.getData();
+        double versionName = Double.parseDouble(CommentUtils.getAppVersionName(this));
+        Log.e("TAG", ""+versionName+":"+data.getVersion());
+        if(versionName<data.getVersion()){
+            showUpdateDialog();
+        }
+
+    }
+
+    /**
+     * 显示更新的对话框
+     */
+    private void showUpdateDialog() {
+        Intent intent = new Intent(this, DownloadDialogActivity.class);
+        startActivity(intent);
+    }
+
 
 }

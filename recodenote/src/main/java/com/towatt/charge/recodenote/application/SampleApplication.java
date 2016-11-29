@@ -23,6 +23,9 @@ import android.content.IntentFilter;
 import com.karumi.dexter.Dexter;
 import com.towatt.charge.recodenote.receiver.AutoBoot;
 
+import org.xutils.BuildConfig;
+import org.xutils.x;
+
 /**
  * Sample application that initializes the Dexter library.
  */
@@ -49,5 +52,11 @@ public class SampleApplication extends Application {
     IntentFilter filter1 = new IntentFilter();
     filter1.addAction(Intent.ACTION_SCREEN_ON);
     registerReceiver(receiver, filter1);
+
+
+    //初始化XUtils3
+    x.Ext.init(this);
+    //设置debug模式
+    x.Ext.setDebug(BuildConfig.DEBUG);
   }
 }

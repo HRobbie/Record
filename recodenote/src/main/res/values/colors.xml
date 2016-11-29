@@ -20,4 +20,9 @@
     <color name="red_normal">#FF0000</color>
     <color name="red_pressed">#FF6666</color>
 
+    <color name="gray_line">#c1c1c1</color>
+
+    <color name="gray_edf2f7">#edf2f7</color>
+
+    <color name="orange_ffbf1b">#ffbf1b</color>
 </resources>
