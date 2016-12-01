@@ -379,18 +379,35 @@ public class FolderActivity extends AppCompatActivity implements View.OnClickLis
                         if (!name.isEmpty()&&!folderName.isEmpty()) {
                             long duration=sumRange-470;
                             Log.e("TAG", "duration=" + duration);
+                            boolean fade=false;
+                            FolderBean folderBean1 = dbManager.queryFolderByfolderName(folderName);
+                            if(folderBean1!=null){
+                                RecordBean recordBean1 = dbManager.queryRecordByName(name, folderName);
+                                if(recordBean1!=null){
+                                    CommentUtils.showToast(FolderActivity.this,"文件名重复！");
+                                    fade=false;
+                                }else{
+                                    RecordBean recordBean = new RecordBean(1, name, timeMillis, duration, mRecAudioFile.getName(),mRecAudioFile.getAbsolutePath(),folderBean1.getWhichFolder());
+                                    dbManager.add(recordBean);
+                                    fade=true;
+                                }
+                            }else{
+                                FolderBean folderBean = new FolderBean(1, timeMillis+"", folderName, timeMillis);
+                                dbManager.addFolder(folderBean);
+                                RecordBean recordBean = new RecordBean(1, name, timeMillis, duration, mRecAudioFile.getName(),mRecAudioFile.getAbsolutePath(),timeMillis+"");
+                                dbManager.add(recordBean);
+                                fade=true;
+                            }
 
-                            RecordBean recordBean = new RecordBean(1, name, timeMillis, duration, mRecAudioFile.getName(),mRecAudioFile.getAbsolutePath(),timeMillis+"");
-                            dbManager.add(recordBean);
-                            FolderBean folderBean = new FolderBean(1, timeMillis+"", folderName, timeMillis);
-                            dbManager.addFolder(folderBean);
 
-                            if (mRecAudioFile != null) {
+                            if (mRecAudioFile != null&&fade) {
                                 noCloseDialog(dialog,true);
                                 updateListData();
 
 //                                inRecording=false;
 //                                createFolder(timeMillis);
+                            }else{
+                                noCloseDialog(dialog,false);
                             }
                         } else {
                             CommentUtils.showToast(FolderActivity.this,"名字不能为空！");

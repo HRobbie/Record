@@ -135,6 +135,31 @@ public class DBManager {
         cursor.close();
         return list;
     }
+
+    /**
+     * 根据文件夹查询其中的录音
+     *
+     * @return
+     */
+    public RecordBean queryRecordByName(String name,String folderName) {
+        String sql = "select * from record_folder f,record_note n where f.whichFolder=n.whichFolder and n.name=? and f.folderName=?";
+        Cursor cursor = db.rawQuery(sql, new String[]{name,folderName});
+        while (cursor.moveToNext()) {
+            int _id = cursor.getInt(cursor.getColumnIndex("_id"));
+            long createDate = cursor.getLong(cursor.getColumnIndex("createDate"));
+            long duration = cursor.getLong(cursor.getColumnIndex("duration"));
+            String createName = cursor.getString(cursor.getColumnIndex("createName"));
+            long clockTime = cursor.getLong(cursor.getColumnIndex("clockTime"));
+            int isAlert = cursor.getInt(cursor.getColumnIndex("isAlert"));
+            String storePosition = cursor.getString(cursor.getColumnIndex("storePosition"));
+            String whichFolder1 = cursor.getString(cursor.getColumnIndex("whichFolder"));
+            RecordBean note = new RecordBean(_id, name, createDate, duration, createName,clockTime,isAlert,storePosition,whichFolder1);
+
+            return note;
+        }
+        cursor.close();
+        return null;
+    }
     /**
      * 查询所有含有通知并且通知超过当前日期的类,且需要提醒
      *
@@ -262,6 +287,7 @@ public class DBManager {
     }
 
 
+
     /**
      * 删除若干条数据
      *
@@ -320,6 +346,27 @@ public class DBManager {
 
             return note;
         }
+        cursor.close();
+        return null;
+    }
+
+    /**
+     * 根据文件名查找是否有相同文件名的文件夹
+     * @param folderName
+     * @return
+     */
+    public FolderBean queryFolderByfolderName(String folderName){
+        String sql="select * from record_folder where folderName=?";
+        Cursor cursor = db.rawQuery(sql, new String[]{folderName});
+        if (cursor.moveToNext()){
+            int _id = cursor.getInt(cursor.getColumnIndex("_id"));
+            String whichFolder = cursor.getString(cursor.getColumnIndex("whichFolder"));
+            long createDate = cursor.getLong(cursor.getColumnIndex("createDate"));
+            FolderBean note = new FolderBean(_id, whichFolder, folderName, createDate);
+
+            return note;
+        }
+        cursor.close();
         return null;
     }
 }
